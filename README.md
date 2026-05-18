@@ -66,16 +66,18 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 
 ### 8 个必选技能
 
-| # | 技能 | 阶段 | Agent |
-|---|------|------|-------|
-| 1 | brainstorming | 设计 | designer |
-| 2 | frontend-design | 设计 | frontend-designer（若有前端） |
-| 3 | writing-plans | 规划 | planner |
-| 4 | dispatching-parallel-agents | 规划 | planner |
-| 5 | requesting-code-review | 审查 | reviewer |
-| 6 | ast-code-analysis-superpower | 审查 | reviewer |
-| 7 | receiving-code-review | 审查 | reviewer |
-| 8 | finishing-a-development-branch | 收尾 | finisher |
+> 以下技能均来自 **superpowers** 与 **gstack** 两个上游项目，安装本 skill 之前必须先完成它们的安装。详见下文 [依赖项](#依赖项--dependencies) 章节。
+
+| # | 技能 | 来源 | 阶段 | Agent |
+|---|------|------|------|-------|
+| 1 | brainstorming | superpowers | 设计 | designer |
+| 2 | frontend-design | gstack | 设计 | frontend-designer（若有前端） |
+| 3 | writing-plans | superpowers | 规划 | planner |
+| 4 | dispatching-parallel-agents | superpowers | 规划 | planner |
+| 5 | requesting-code-review | superpowers | 审查 | reviewer |
+| 6 | ast-code-analysis-superpower | superpowers | 审查 | reviewer |
+| 7 | receiving-code-review | superpowers | 审查 | reviewer |
+| 8 | finishing-a-development-branch | superpowers | 收尾 | finisher |
 
 ### 模型分级
 
@@ -121,25 +123,69 @@ qoder-autopilot-package/
 
 ---
 
+## 依赖项 / Dependencies
+
+`qoder-autopilot` **不是一个独立 skill**——它是一个调度多个上游 skill 的编排器（pipeline orchestrator）。运行流水线时，7 个 Agent 会通过 Skill tool 调用以下技能。**安装本 skill 之前，必须先安装并验证 superpowers 与 gstack 两个上游项目。**
+
+### 上游项目
+
+| 项目 | GitHub | 用途 | 提供的 skill 数 |
+|------|--------|------|----------------|
+| **superpowers** | [obra/superpowers](https://github.com/obra/superpowers) | Claude Code 的 skill 框架 + 软件开发方法论。提供 brainstorming、writing-plans、dispatching-parallel-agents、requesting-code-review、receiving-code-review、ast-code-analysis-superpower、finishing-a-development-branch 等核心技能 | 7（必选） |
+| **gstack** | [garrytan/gstack](https://github.com/garrytan/gstack) | Garry Tan 的 Claude Code 配置集合（23 个 opinionated skill）。提供 frontend-design 等设计/部署/QA 类技能 | 1（必选） + 多个可选 |
+
+### 必选 skill（8 个，均通过上游项目获得）
+
+来源详见上文 [8 个必选技能](#8-个必选技能) 表。
+
+- 来自 superpowers（7 个）：`brainstorming` · `writing-plans` · `dispatching-parallel-agents` · `requesting-code-review` · `receiving-code-review` · `ast-code-analysis-superpower` · `finishing-a-development-branch`
+- 来自 gstack（1 个）：`frontend-design`
+
+任一缺失都会导致对应 Phase 的 Agent 调用失败。
+
+### 可选依赖
+
+| 依赖 | 来源 | 用途 |
+|------|------|------|
+| `agent-browser` | gstack（[garrytan/gstack](https://github.com/garrytan/gstack)） | finisher 前端冒烟测试 + Phase 5B verifier 视觉检查 |
+| `gbrain` MCP | 第三方 / 自托管 | Phase 0 需求收集时查询历史决策、Phase 7 进化阶段把复盘写入知识库 |
+
+未配置时降级处理：finisher 跳过冒烟、verifier 仅做静态比对；Phase 0 / Phase 7 跳过 gbrain 调用，复盘只生成本地 `.retro.md`。
+
+### 安装上游依赖
+
+```bash
+# 1. 安装 superpowers（参考其 README）
+git clone https://github.com/obra/superpowers.git
+cd superpowers && bash install.sh   # 或按其 README 指引
+
+# 2. 安装 gstack（参考其 README）
+git clone https://github.com/garrytan/gstack.git
+cd gstack && bash install.sh        # 或按其 README 指引
+
+# 3. 验证关键 skill 已安装到本机 skills 目录
+ls ~/.claude/skills/brainstorming ~/.claude/skills/frontend-design \
+   ~/.claude/skills/writing-plans ~/.claude/skills/finishing-a-development-branch
+# 或对应的 ~/.agents/skills/、~/.qoderwork/skills/ 路径
+```
+
+> **平台兼容性说明**：本 skill 支持 Claude Code、Qoder、QoderWork 三种宿主。安装路径会自动同步到 `~/.claude/skills/`、`~/.agents/skills/`、`~/.qoderwork/skills/`（详见下文 [安装路径](#安装路径)）。superpowers 与 gstack 的 skill 也需要确保在对应宿主可见。
+
+---
+
 ## 安装
 
 ### 前置条件
 
-以下技能必须已安装（被 Agent 调用）：
+✅ 已完成上文 [依赖项](#依赖项--dependencies) 章节中 superpowers + gstack 的安装与验证。
 
-- brainstorming
-- frontend-design
-- writing-plans
-- dispatching-parallel-agents
-- requesting-code-review
-- receiving-code-review
-- ast-code-analysis-superpower
-- finishing-a-development-branch
+如需快速核对所需 skill 是否齐全：
 
-可选：
-
-- agent-browser（finisher 前端冒烟 + verifier 视觉检查）
-- gbrain MCP（需求收集 + 进化阶段知识集成）
+| 必选 skill | 验证 |
+|------------|------|
+| brainstorming, writing-plans, dispatching-parallel-agents | 来自 superpowers |
+| requesting-code-review, receiving-code-review, ast-code-analysis-superpower, finishing-a-development-branch | 来自 superpowers |
+| frontend-design | 来自 gstack |
 
 ### 快速安装
 
