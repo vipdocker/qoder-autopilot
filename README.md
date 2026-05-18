@@ -1,0 +1,242 @@
+# Qoder Autopilot v9.4 — 安装指南
+
+## 概述
+
+Qoder Autopilot 是一个多 Agent 编排技能，驱动完整的 superpowers 开发流水线。v9.4 在 v9.3 的基础上新增 **Cross-Layer Field Mapping Contract（跨层字段映射契约）**——这是继 v9.1 CTP（横向同层代码契约）和 v9.3 Same-Family Sibling Scan（横向同容器 UI 命名）之后的第三类一致性维度：**纵向跨层数据契约**。彻底解决"后端发 `user_name`、前端读 `userName`，没有转换层导致 undefined"这一类典型 bug。调度 7 个专业 Agent，覆盖调研、设计、规划、实现、代码审查、收尾和独立验证。
+
+### 三类正交的一致性维度
+
+| 维度 | 代际 | 描述 | 典型 bug |
+|------|------|------|----------|
+| 横向 · 代码层 | v9.1 CTP | 同层兄弟实现接口签名一致 | str vs date 类型契约失配 |
+| 横向 · UI 层 | v9.3 Sibling Scan | 同容器 HTML/JS/CSS 命名一致 | mdAIStartBtn vs mdAiStartBtn |
+| **纵向 · 跨层** | **v9.4 Field Mapping** | **后端↔前端字段名稳定映射** | **user_name vs userName 无转换 → undefined** |
+
+### 架构
+
+```
+编排器 (SKILL.md 精简脊柱, 在主会话运行)
+│
+│  通过 Task() + 路径传递协议调度 Agent
+│  编排器保持轻量 —— 永远不读取 Agent 文件内容到自己的上下文
+│  Phase 详情按需加载（渐进式加载，减少 token 消耗）
+│  v9.0: 结构化 JSON 解析 + 三级错误分类 + 并发锁
+│  v9.1: 契约一致性 CTP（6 层防御 同族实现契约失配）
+│  v9.2: 架构设计原则（6 条可推导规则 防止层职责漂移）
+│  v9.3: Same-Family Sibling Scan（UI 命名基线 + 兄弟一致性检查）
+│  v9.4: Cross-Layer Field Mapping Contract（5 层防御 跨层字段映射）
+│
+├── Phase 0: 需求收集 ─────── 主会话（产品化需求收集 + gbrain 查询）
+├── Phase 1: 调研 ────────── Task() → researcher [Kimi-K2.5]
+│                              ├── 前端设计体系 + 同族签名快照 + UI 命名基线（v9.3）
+│                              └── §4 API Field Naming Convention Scan（v9.4）
+├── Phase 2A: 设计 ───────── Task() → designer [Premium]
+│                              ├── §2b Explicit Contracts（v9.1 CTP）
+│                              └── §2c Field Mapping Contract Chapter（v9.4，前后端皆有时强制）
+├── Phase 2B: 前端设计 ────── Task() → frontend-designer（若有前端）[Premium]
+│                              ├── 读取项目现有组件 + 显式契约章节 + 多角度评审 + 人工确认
+│                              └── §2b Honor Field Mapping Contract（v9.4）
+├── Phase 3: 规划 ────────── Task() → planner [Premium]
+│                              └── DAG + T_contract_* + 前端规范对齐
+├── Phase 4A: 实现 ───────── Task() × N → implementer（按任务）[Premium]
+│                              ├── Peer Read-Before-Code + 交叉检查项目现有组件
+│                              └── §1e Field Mapping Adherence + grep self-check + field_mapping JSON（v9.4）
+├── Phase 4B: 审查 ───────── Task() → reviewer [Premium]
+│                              ├── spec合规 + Contract Matrix + UI Naming Consistency
+│                              └── Cross-Layer Field Mapping Check + 6 行严重度矩阵（v9.4）
+├── Phase 5A: 收尾 ───────── Task() → finisher [Kimi-K2.6]
+│                              └── type/lint/build + E2E smoke + 分支整理
+├── Phase 5B: 独立验证 ────── Task() → verifier
+│                              └── 架构合规 + 前端风格合规 + Sibling Consistency Check
+│                              └── 人工确认（展示 5A + 5B 结果）
+├── Phase 6: 审计 ────────── 主会话（8 技能清单 + 补救）
+└── Phase 7: 进化 ────────── 主会话（复盘 + 两张强制表格 + gbrain → .retro.md）
+```
+
+典型调度次数：6-9（含必须的 5B 验证）。
+
+### 安装路径
+
+```
+Skill (主目录):  ~/.agents/skills/qoder-autopilot/     (11 files)
+Skill (软链接): ~/.qoderwork/skills/qoder-autopilot → 主目录
+Agents:         ~/.qoder/agents/                       (7 files)
+Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
+```
+
+### 8 个必选技能
+
+| # | 技能 | 阶段 | Agent |
+|---|------|------|-------|
+| 1 | brainstorming | 设计 | designer |
+| 2 | frontend-design | 设计 | frontend-designer（若有前端） |
+| 3 | writing-plans | 规划 | planner |
+| 4 | dispatching-parallel-agents | 规划 | planner |
+| 5 | requesting-code-review | 审查 | reviewer |
+| 6 | ast-code-analysis-superpower | 审查 | reviewer |
+| 7 | receiving-code-review | 审查 | reviewer |
+| 8 | finishing-a-development-branch | 收尾 | finisher |
+
+### 模型分级
+
+| 模型 | Agent | 理由 |
+|------|-------|------|
+| Premium（默认） | designer, frontend-designer, planner, implementer, reviewer | 创意设计、代码生成、复杂分析 |
+| Kimi-K2.5 | researcher | 搜索 + 综合，无需代码创建 |
+| Kimi-K2.6 | finisher | 分支整理 + 检查清单验证 |
+
+升级策略：非 Premium agent 在同一任务上失败两次 → 自动升级到 Premium 重试。
+
+---
+
+## 包内容
+
+```
+qoder-autopilot-package/
+├── install.sh                 ← 安装脚本（运行这个）
+├── uninstall.sh               ← 卸载脚本
+├── README.md                  ← 本文件
+├── skill/                     ← 技能文件（→ ~/.agents/skills/ + symlink）
+│   ├── SKILL.md               ← v9.4 编排器精简脊柱（主入口）
+│   ├── reference.md           ← 质量门、错误分类、契约一致性、资源限制
+│   ├── self-check-protocol.md ← 阶段退出验证协议
+│   └── phases/                ← Phase 详情（按需加载）
+│       ├── phase-0-intake.md
+│       ├── phase-1-research.md    ← v9.3: SAME-FAMILY SCAN, v9.4: API FIELD NAMING SCAN
+│       ├── phase-2-design.md      ← v9.4: FIELD MAPPING CONTRACT mandatory
+│       ├── phase-3-plan.md
+│       ├── phase-4-execute.md
+│       ├── phase-5-finish.md      ← v9.3: Sibling Consistency Check
+│       ├── phase-6-done.md
+│       └── phase-7-evolve.md      ← v9.3: 两张强制复盘表格
+└── agents/                    ← Agent 文件（→ ~/.qoder/agents/ + ~/.qoderwork/agents/）
+    ├── engineering-autopilot-researcher.md         ← v9.3 Mode B + v9.4 §4 API naming scan
+    ├── engineering-autopilot-designer.md           ← v9.4 §2c Field Mapping Contract chapter
+    ├── engineering-autopilot-frontend-designer.md  ← v9.4 §2b Honor Field Mapping Contract
+    ├── engineering-autopilot-planner.md
+    ├── engineering-autopilot-implementer.md        ← v9.4 §1e Field Mapping Adherence
+    ├── engineering-autopilot-reviewer.md           ← v9.4 Cross-Layer Field Mapping Check
+    └── engineering-autopilot-finisher.md
+```
+
+---
+
+## 安装
+
+### 前置条件
+
+以下技能必须已安装（被 Agent 调用）：
+
+- brainstorming
+- frontend-design
+- writing-plans
+- dispatching-parallel-agents
+- requesting-code-review
+- receiving-code-review
+- ast-code-analysis-superpower
+- finishing-a-development-branch
+
+可选：
+
+- agent-browser（finisher 前端冒烟 + verifier 视觉检查）
+- gbrain MCP（需求收集 + 进化阶段知识集成）
+
+### 快速安装
+
+```bash
+cd qoder-autopilot-package
+bash install.sh
+```
+
+脚本会：
+1. 安装 skill 到 `~/.agents/skills/qoder-autopilot/`（11 文件）
+2. 创建软链接 `~/.qoderwork/skills/qoder-autopilot` → 主目录
+3. 安装 agents 到 `~/.qoder/agents/` + `~/.qoderwork/agents/`（各 7 文件）
+4. 自动清理旧版遗留（validator agent、~/.qoder/skills/ 旧路径）
+5. 验证文件数量
+
+### 卸载
+
+```bash
+bash uninstall.sh
+```
+
+---
+
+## v9.3 → v9.4 变化
+
+| 方面 | v9.3 | v9.4 |
+|------|------|------|
+| 横向同族代码契约 | CTP 6 层 | 保留 |
+| 横向同族 UI 命名 | Sibling Scan Mode B | 保留 |
+| **纵向跨层字段契约** | **无** | **+ Field Mapping Contract（5 层防御）** |
+| Researcher 调研 | §2 前端设计体系 + 同族签名/UI 基线 | + §4 API Field Naming Convention Scan |
+| Designer 输出 | §2b Explicit Contracts（CTP） | + §2c Field Mapping Contract Chapter（FE+BE 时强制）|
+| Frontend Designer | 读现有组件 + 显式契约 + 多角度评审 | + §2b Honor Field Mapping Contract |
+| Implementer 自检 | Peer Read + 交叉检查 | + §1e Field Mapping Adherence + grep 自检 |
+| Implementer JSON 输出 | 已有字段 | + `field_mapping: APPLIED/N/A` |
+| Reviewer 检查 | Spec + Contract Matrix + UI Naming | + Cross-Layer Field Mapping Check + 6 行严重度矩阵 |
+| Reviewer JSON 输出 | 已有字段 | + `field_mapping_consistency` |
+| Phase 1 验证门控 | Baseline Signature Table 存在性 | + API Field Naming Convention 块存在性 |
+| Phase 2 验证门控 | 多角度评审 | + Field Mapping Contract 章节存在性（FE+BE 时） |
+| FAILURE MODES | 13 个 | 14 个（+FAILURE 14: 跨层字段映射不一致）|
+| Global Rules | 13 | 14 |
+| 典型可捕获 Bug | 同族契约失配 + 层职责漂移 + UI 命名漂移 | + 后端 snake ↔ 前端 camel 无转换 / 前端字段拼写错误 / 命名混用 |
+
+---
+
+## v9.4 五层防御机制（FAILURE 14）
+
+| 层 | Agent / 阶段 | 职责 | 产物 |
+|----|-------------|------|------|
+| L1 | Researcher §4 | 扫描后端序列化（Pydantic alias / DRF source / Go struct json tags）+ 前端取数路径（fetch/axios/TS interface），识别命名约定与转换边界 | research_brief 中的 "API Field Naming Convention" 块 + JSON `has_api_naming_convention` |
+| L2 | Designer §2c | 当 has_frontend ∧ 后端 API 时，强制在 design_doc 中产出"Field Mapping Contract"章节：每端点表格（wire \| consumed \| type \| example \| notes）+ 转换点 + 例外说明 + 显式一致性 diff | design_doc.md 中的 Field Mapping Contract 章节 |
+| L3 | Frontend Designer §2b | 前端 spec 的 state/props 字段名必须遵循契约的 frontend names | frontend_spec.md 中字段名与契约一致 |
+| L4 | Implementer §1e | 后端 serializer 强制 wire 名（alias 或 source）；前端读契约名；grep 自检；产出 `field_mapping: APPLIED/N/A` | 实现代码 + 文本+JSON 输出 |
+| L5 | Reviewer | Cross-Layer Field Mapping Check + 6 行严重度矩阵：无转换层失配=BLOCKER、缺字段=BLOCKER、命名漂移=HIGH、混用=MEDIUM、未消费=LOW；Spec-Gate FAIL(HIGH) 当 FE+BE 但 design 缺章节 | code_review_report 中的 Cross-Layer 段 + JSON `field_mapping_consistency` |
+
+注：planner 与 finisher 不参与（DAG 调度无需关心字段名；finisher 的 E2E smoke 已被 L4 grep 自检 + L5 矩阵覆盖，避免重复）。
+
+---
+
+## v8.0 → v9.x 演进总览
+
+| 方面 | v8.0 | v9.0 | v9.1 | v9.2 | v9.3 | v9.4 |
+|------|------|------|------|------|------|------|
+| Agent 输出 | 自由文本 | JSON block | JSON block | JSON block | JSON + ui_naming | JSON + field_mapping |
+| 错误处理 | 统一重试 | 三级分类 | 三级分类 | 三级分类 | 三级分类 | 三级分类 |
+| 横向代码契约 | 无 | 无 | CTP 6 层 | CTP 6 层 | CTP + UI Naming | CTP + UI Naming |
+| 横向 UI 契约 | 无 | 无 | 无 | 无 | Sibling Scan Mode B | Sibling Scan Mode B |
+| **纵向跨层契约** | **无** | **无** | **无** | **无** | **无** | **Field Mapping 5 层** |
+| 架构原则 | 无 | 无 | 无 | 6 条可推导 | 6 条可推导 | 6 条可推导 |
+| Phase 1 门控 | 无 | 无 | 无 | 无 | Baseline 存在性 | + API Naming 块 |
+| Phase 2 门控 | 无 | 无 | 无 | 无 | 无 | + Field Mapping 章节 |
+| Phase 7 复盘 | 自由格式 | 自由格式 | 自由格式 | 自由格式 | 两张强制表格 | 两张强制表格 |
+| FAILURE MODES | 7 | 10 | 11 | 12 | 13 | 14 |
+| Global Rules | 8 | 11 | 12 | 13 | 13 | 14 |
+
+---
+
+## 已知故障模式
+
+v9.4 记录了 14 个从实际运行中发现的故障模式，每个都有对应的修复措施。关键项：
+
+- **FAILURE 11** (v9.1): 同族实现契约失配 — 单测通过但集成崩溃。修复：CTP 6 层防御（横向代码层）。
+- **FAILURE 12** (v9.2): 架构层职责漂移 — 逻辑在错误的层，每次变更波及多层。修复：6 条架构设计原则。
+- **FAILURE 13** (v9.3): 同族实现未被发现 — Researcher 遗漏同层文件导致命名/协议/风格不一致。修复：SAME-FAMILY SCAN mandatory + Phase 1 验证门控（横向 UI 层）。
+- **FAILURE 14** (v9.4): 跨层字段映射不一致 — 后端 snake_case 序列化、前端 camelCase 读取，中间无转换层 → 运行时 undefined；或前端字段拼写错误（payload.dt vs payload.date）；或同一应用内混用两种命名。修复：5 层防御 Field Mapping Contract（纵向跨层）。
+
+---
+
+## 版本历史
+
+| 版本 | 日期 | 变更 |
+|------|------|------|
+| v9.4 | 2026-05-18 | Cross-Layer Field Mapping Contract（纵向跨层）：FAILURE 14 + 5 层防御（Researcher §4 API naming scan / Designer §2c contract chapter / Frontend Designer §2b honor contract / Implementer §1e adherence + grep self-check / Reviewer cross-layer check + 6-row severity matrix）；Phase 1+2 双层验证门控；Global Rule 14（跨层映射失配=BLOCKER）。 |
+| v9.3 | 2026-05-17 | Same-Family Sibling Scan（横向 UI 层）：Mode B（HTML ID/JS/CSS 命名基线）；FAILURE 13；Reviewer UI Naming Consistency + Severity Matrix；Phase 1 mandatory scan + 验证门控；Phase 5B Sibling Contract Consistency Check；Phase 7 两张强制复盘表（需求追溯 + 兄弟一致性）。 |
+| v9.2 | 2026-05-17 | 架构设计原则：6 条可推导规则（层职责单一性、协议原生性、消息显式判别、配置边界规范化、抽象层污染防范、用户可观测完整性）；FAILURE 12；Global Rule 13。 |
+| v9.1 | 2026-05-07 | 契约一致性层 CTP（横向代码层）：FAILURE 11 + 6 层防御。 |
+| v9.0 | 2026-05-07 | 执行可靠性：JSON 输出、三级错误分类、并发锁、空闲超时、确定性恢复。 |
+| v8.0 | 2026-05-04 | 结构优化：SKILL.md 精简脊柱 + 8 phase 文件；Phase 5B 独立验证；前端三层防御。 |
+| v7.0 | 2026-05-04 | 前端设计规范全链路传递；合并 validator→finisher；移除 TDD。 |
+| v6.2 | 2026-04-26 | 路径传递调度，部署链检查，缓存破解审计。 |
