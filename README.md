@@ -133,7 +133,7 @@ qoder-autopilot-package/
 |------|--------|------|----------------|
 | **superpowers** | [obra/superpowers](https://github.com/obra/superpowers) | Claude Code 的 skill 框架 + 软件开发方法论。提供大部分核心流水线技能 | 6：brainstorming · writing-plans · dispatching-parallel-agents · requesting-code-review · receiving-code-review · finishing-a-development-branch |
 | **gstack** | [garrytan/gstack](https://github.com/garrytan/gstack) | Garry Tan 的 Claude Code 配置集合（23 个 opinionated skill）。提供设计/部署/QA 类技能 | 1：frontend-design |
-| **prompts.chat** | [f/prompts.chat](https://github.com/f/prompts.chat) | Fatih Kadir Akın 维护的开源 prompt 库（前身：awesome-chatgpt-prompts）。提供 AST 级代码静态分析的 prompt template | 1：ast-code-analysis-superpower |
+| **prompts.chat** | 站点：[prompts.chat](https://prompts.chat) · 仓库：[f/prompts.chat](https://github.com/f/prompts.chat) | Fatih Kadir Akın 维护的开源 prompt 库（前身：awesome-chatgpt-prompts）。提供 AST 级代码静态分析的 prompt template | 1：[ast-code-analysis-superpower](https://prompts.chat/prompts/cmjmk2f8i000bld04ikqh7i78_ast-code-analysis-superpower) |
 
 ### 必选 skill（8 个，分布在三个上游）
 
@@ -166,10 +166,11 @@ git clone https://github.com/garrytan/gstack.git
 cd gstack && bash install.sh        # 或按其 README 指引
 
 # 3. 从 prompts.chat 获取 ast-code-analysis-superpower
-git clone https://github.com/f/prompts.chat.git
-# 找到 ast-code-analysis-superpower 对应的 prompt 文件，按你的 skill 目录约定
-# 落到 ~/.claude/skills/ast-code-analysis-superpower/SKILL.md
-# （可参考 https://llmbase.ai/prompts/ast-code-analysis-superpower/ 的模板说明）
+#    具体 prompt 页面：
+#    https://prompts.chat/prompts/cmjmk2f8i000bld04ikqh7i78_ast-code-analysis-superpower
+#    把页面上的 prompt 内容按你的 skill 目录约定落到：
+#    ~/.claude/skills/ast-code-analysis-superpower/SKILL.md
+#    （仓库镜像：https://github.com/f/prompts.chat）
 
 # 4. 验证关键 skill 已安装到本机 skills 目录
 ls ~/.claude/skills/brainstorming ~/.claude/skills/frontend-design \
