@@ -150,7 +150,9 @@ qoder-autopilot-package/
 | 依赖 | 来源 | 用途 |
 |------|------|------|
 | `agent-browser` | gstack（[garrytan/gstack](https://github.com/garrytan/gstack)） | finisher 前端冒烟测试 + Phase 5B verifier 视觉检查 |
-| `gbrain` MCP | 第三方 / 自托管 | Phase 0 需求收集时查询历史决策、Phase 7 进化阶段把复盘写入知识库 |
+| `gbrain` MCP | 独立仓库 [garrytan/gbrain](https://github.com/garrytan/gbrain)；通过 gstack 的 `setup-gbrain` skill 完成 MCP 注册（参考 [USING_GBRAIN_WITH_GSTACK.md](https://github.com/garrytan/gstack/blob/main/USING_GBRAIN_WITH_GSTACK.md)） | Phase 0 需求收集时查询历史决策、Phase 7 进化阶段把复盘写入知识库 |
+
+> **gbrain 与 gstack 的关系**：gbrain 是 Garry Tan 的"opinionated agent brain"——一个 MCP server，用作 Claude Code/Cursor/Windsurf 等客户端的长期记忆与决策库。它是独立项目（`garrytan/gbrain`），但通常通过 gstack 内的 `setup-gbrain` skill 来一键安装并注册到 Claude Code。如果你已经按上文安装了 gstack，可直接运行 `setup-gbrain` skill 完成接入。
 
 未配置时降级处理：finisher 跳过冒烟、verifier 仅做静态比对；Phase 0 / Phase 7 跳过 gbrain 调用，复盘只生成本地 `.retro.md`。
 
