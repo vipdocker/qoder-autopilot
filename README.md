@@ -66,7 +66,7 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 
 ### 8 个必选技能
 
-> 以下技能均来自 **superpowers** 与 **gstack** 两个上游项目，安装本 skill 之前必须先完成它们的安装。详见下文 [依赖项](#依赖项--dependencies) 章节。
+> 以下技能分别来自 **superpowers**、**gstack**、**prompts.chat** 三个上游项目，安装本 skill 之前必须先完成它们的安装。详见下文 [依赖项](#依赖项--dependencies) 章节。
 
 | # | 技能 | 来源 | 阶段 | Agent |
 |---|------|------|------|-------|
@@ -75,7 +75,7 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 | 3 | writing-plans | superpowers | 规划 | planner |
 | 4 | dispatching-parallel-agents | superpowers | 规划 | planner |
 | 5 | requesting-code-review | superpowers | 审查 | reviewer |
-| 6 | ast-code-analysis-superpower | superpowers | 审查 | reviewer |
+| 6 | ast-code-analysis-superpower | prompts.chat | 审查 | reviewer |
 | 7 | receiving-code-review | superpowers | 审查 | reviewer |
 | 8 | finishing-a-development-branch | superpowers | 收尾 | finisher |
 
@@ -125,21 +125,23 @@ qoder-autopilot-package/
 
 ## 依赖项 / Dependencies
 
-`qoder-autopilot` **不是一个独立 skill**——它是一个调度多个上游 skill 的编排器（pipeline orchestrator）。运行流水线时，7 个 Agent 会通过 Skill tool 调用以下技能。**安装本 skill 之前，必须先安装并验证 superpowers 与 gstack 两个上游项目。**
+`qoder-autopilot` **不是一个独立 skill**——它是一个调度多个上游 skill 的编排器（pipeline orchestrator）。运行流水线时，7 个 Agent 会通过 Skill tool 调用以下技能。**安装本 skill 之前，必须先安装并验证 superpowers、gstack、prompts.chat 三个上游项目。**
 
 ### 上游项目
 
-| 项目 | GitHub | 用途 | 提供的 skill 数 |
+| 项目 | GitHub | 用途 | 提供的必选 skill |
 |------|--------|------|----------------|
-| **superpowers** | [obra/superpowers](https://github.com/obra/superpowers) | Claude Code 的 skill 框架 + 软件开发方法论。提供 brainstorming、writing-plans、dispatching-parallel-agents、requesting-code-review、receiving-code-review、ast-code-analysis-superpower、finishing-a-development-branch 等核心技能 | 7（必选） |
-| **gstack** | [garrytan/gstack](https://github.com/garrytan/gstack) | Garry Tan 的 Claude Code 配置集合（23 个 opinionated skill）。提供 frontend-design 等设计/部署/QA 类技能 | 1（必选） + 多个可选 |
+| **superpowers** | [obra/superpowers](https://github.com/obra/superpowers) | Claude Code 的 skill 框架 + 软件开发方法论。提供大部分核心流水线技能 | 6：brainstorming · writing-plans · dispatching-parallel-agents · requesting-code-review · receiving-code-review · finishing-a-development-branch |
+| **gstack** | [garrytan/gstack](https://github.com/garrytan/gstack) | Garry Tan 的 Claude Code 配置集合（23 个 opinionated skill）。提供设计/部署/QA 类技能 | 1：frontend-design |
+| **prompts.chat** | [f/prompts.chat](https://github.com/f/prompts.chat) | Fatih Kadir Akın 维护的开源 prompt 库（前身：awesome-chatgpt-prompts）。提供 AST 级代码静态分析的 prompt template | 1：ast-code-analysis-superpower |
 
-### 必选 skill（8 个，均通过上游项目获得）
+### 必选 skill（8 个，分布在三个上游）
 
 来源详见上文 [8 个必选技能](#8-个必选技能) 表。
 
-- 来自 superpowers（7 个）：`brainstorming` · `writing-plans` · `dispatching-parallel-agents` · `requesting-code-review` · `receiving-code-review` · `ast-code-analysis-superpower` · `finishing-a-development-branch`
-- 来自 gstack（1 个）：`frontend-design`
+- 来自 **superpowers**（6 个）：`brainstorming` · `writing-plans` · `dispatching-parallel-agents` · `requesting-code-review` · `receiving-code-review` · `finishing-a-development-branch`
+- 来自 **gstack**（1 个）：`frontend-design`
+- 来自 **prompts.chat**（1 个）：`ast-code-analysis-superpower`
 
 任一缺失都会导致对应 Phase 的 Agent 调用失败。
 
@@ -163,9 +165,16 @@ cd superpowers && bash install.sh   # 或按其 README 指引
 git clone https://github.com/garrytan/gstack.git
 cd gstack && bash install.sh        # 或按其 README 指引
 
-# 3. 验证关键 skill 已安装到本机 skills 目录
+# 3. 从 prompts.chat 获取 ast-code-analysis-superpower
+git clone https://github.com/f/prompts.chat.git
+# 找到 ast-code-analysis-superpower 对应的 prompt 文件，按你的 skill 目录约定
+# 落到 ~/.claude/skills/ast-code-analysis-superpower/SKILL.md
+# （可参考 https://llmbase.ai/prompts/ast-code-analysis-superpower/ 的模板说明）
+
+# 4. 验证关键 skill 已安装到本机 skills 目录
 ls ~/.claude/skills/brainstorming ~/.claude/skills/frontend-design \
-   ~/.claude/skills/writing-plans ~/.claude/skills/finishing-a-development-branch
+   ~/.claude/skills/writing-plans ~/.claude/skills/finishing-a-development-branch \
+   ~/.claude/skills/ast-code-analysis-superpower
 # 或对应的 ~/.agents/skills/、~/.qoderwork/skills/ 路径
 ```
 
@@ -177,15 +186,16 @@ ls ~/.claude/skills/brainstorming ~/.claude/skills/frontend-design \
 
 ### 前置条件
 
-✅ 已完成上文 [依赖项](#依赖项--dependencies) 章节中 superpowers + gstack 的安装与验证。
+✅ 已完成上文 [依赖项](#依赖项--dependencies) 章节中 superpowers + gstack + prompts.chat 的安装与验证。
 
 如需快速核对所需 skill 是否齐全：
 
 | 必选 skill | 验证 |
 |------------|------|
 | brainstorming, writing-plans, dispatching-parallel-agents | 来自 superpowers |
-| requesting-code-review, receiving-code-review, ast-code-analysis-superpower, finishing-a-development-branch | 来自 superpowers |
+| requesting-code-review, receiving-code-review, finishing-a-development-branch | 来自 superpowers |
 | frontend-design | 来自 gstack |
+| ast-code-analysis-superpower | 来自 prompts.chat |
 
 ### 快速安装
 
