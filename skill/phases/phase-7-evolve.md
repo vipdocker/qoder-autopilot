@@ -1,3 +1,4 @@
+<!-- version: 9.5.0 -->
 # Phase 7: EVOLVE — Skill Self-Evolution with Persistent Memory
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -19,7 +20,15 @@
 2. Aggregate change_registry for impact analysis
 3. Aggregate user_interventions for coordination insights
 4. Identify patterns (threshold: same insight 2+ times)
-5. Draft evolution proposals:
+5. Run Health Score (v9.5 — MANDATORY):
+   Call Skill(skill="health")
+   → /health produces a composite 0-10 code quality score:
+     type-check score + lint score + test coverage + dead-code ratio
+   → Record the score and per-dimension breakdown
+   → Compare against previous runs' health scores (from earlier .retro.md entries)
+   → Trend: IMPROVING / STABLE / DECLINING (if ≥2 prior runs exist)
+   → If DECLINING for 2+ consecutive runs → flag as HIGH-priority evolution proposal
+6. Draft evolution proposals:
    - Skill updates (e.g., "writing-plans should include X")
    - Confidence recalibration (e.g., "CRUD harder than expected")
    - Model tier adjustments
@@ -27,8 +36,9 @@
    - Research gaps (e.g., "should have researched X before design")
    - Self-audit insights (e.g., "I consistently skip skill X")
    - Context compression lessons (e.g., "session ran out of context at Phase 4")
-6. HUMAN GATE: Present proposals, apply on approval
-7. Write PERSISTENT MEMORY to .qoder-autopilot-retro.md (project root)
+   - Health score trends (e.g., "lint score declining — new code not following conventions")
+7. HUMAN GATE: Present proposals, apply on approval
+8. Write PERSISTENT MEMORY to .qoder-autopilot-retro.md (project root)
 ```
 
 ## Retro File Format (append-only, timestamped)
@@ -80,6 +90,24 @@ should be filed as retrospective bugs, not "insights".
 Source: Phase 5B Sibling Contract Consistency Check.
 Populate from state.verification_result.consistency_deviations.
 Any DEVIATED item with BUG impact must generate a HIGH-PRIORITY evolution proposal.
+
+### Health Score (v9.5)
+```
+| Dimension       | Score (0-10) | Notes                          |
+|-----------------|--------------|--------------------------------|
+| Type-check     | {n}          | {errors / clean}               |
+| Lint           | {n}          | {warnings / clean}             |
+| Test coverage  | {n}          | {if applicable / N/A}          |
+| Dead code      | {n}          | {orphaned exports / clean}     |
+| **Composite**  | **{n}**      | (weighted average)             |
+
+Previous run score: {prev or "first run"}
+Trend: IMPROVING / STABLE / DECLINING (over last 2-3 runs)
+```
+
+Source: Phase 7 /health skill invocation.
+DECLINING for 2+ consecutive runs → HIGH-priority evolution proposal:
+  "代码质量分持续下降——找出哪个维度退化最快，定位到最近的几个变更。"
 ```
 
 ## Memory Loop

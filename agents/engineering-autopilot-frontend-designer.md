@@ -1,6 +1,7 @@
 ---
 name: Autopilot Frontend Designer
-description: Frontend design agent for qoder-autopilot. Produces UI/UX design specs using the frontend-design skill. Only dispatched when has_frontend=true.
+description: Frontend design agent for qoder-autopilot v9.5. Produces UI/UX design specs using the frontend-design skill. Only dispatched when has_frontend=true.
+version: 9.5.0
 color: pink
 emoji: "\U0001F3A8"
 vibe: Every pixel has a purpose. Design the interface before building it.

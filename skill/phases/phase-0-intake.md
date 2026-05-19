@@ -1,3 +1,4 @@
+<!-- version: 9.5.0 -->
 # Phase 0: INTAKE (main session)
 
 **gstack-inspired: structured product intake, not just "collect requirements".**

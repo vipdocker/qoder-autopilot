@@ -1,3 +1,4 @@
+<!-- version: 9.5.0 -->
 # Phase 4: EXECUTE + REVIEW
 
 **TWO mandatory parts per batch: 4A (implement) and 4B (review).**
@@ -31,7 +32,7 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
 **v6.0 executed ZERO batch reviews. DO NOT REPEAT THIS.**
 
 AGENT: `engineering-autopilot-reviewer.md`
-REQUIRED SKILLS: `requesting-code-review`, `ast-code-analysis-superpower`, `receiving-code-review`
+REQUIRED SKILLS: `requesting-code-review`, `ast-code-analysis-superpower`, `receiving-code-review`, `cso`
 ASSIGNMENT: task IDs in batch, change_registry for batch tasks, design doc path, frontend_spec path (if has_frontend), project path
 
 ```
@@ -40,14 +41,16 @@ ASSIGNMENT: task IDs in batch, change_registry for batch tasks, design doc path,
        Assignment: { task_ids, change_registry_for_batch, design_doc_path, frontend_spec_path (if has_frontend, else omit), project_path }
        ⚠️ design_doc_path MUST be included — reviewer performs spec-compliance check FIRST.
        ⚠️ IF has_frontend: frontend_spec_path MUST also be included — reviewer checks UI compliance.
-    2. VERIFY: report has ALL 3 proofs:
-       requesting-code-review ✓, ast-code-analysis-superpower ✓, receiving-code-review ✓
+    2. VERIFY: report has ALL 4 proofs:
+       requesting-code-review ✓, ast-code-analysis-superpower ✓, receiving-code-review ✓, cso ✓
     3. VERIFY: Spec-Compliance Summary present with per-requirement verdicts
        Any MISSING/DIVERGED requirement → Batch Gate FAIL (blocking)
-    4. Check Batch Gate: PASS/FAIL
-    5. state.batch_reviews += [{ batch: [ids], gate: "PASS/FAIL", spec_compliance: "X/Y", proofs: {...} }]
-    6. skills_invoked += [requesting-code-review, ast-code-analysis-superpower, receiving-code-review]
-    7. If Batch Gate FAIL → remediate findings, re-review
+    4. VERIFY: Security Audit summary present (security_audit field in JSON)
+       Any CRITICAL security finding → Batch Gate FAIL (blocking)
+    5. Check Batch Gate: PASS/FAIL
+    6. state.batch_reviews += [{ batch: [ids], gate: "PASS/FAIL", spec_compliance: "X/Y", security_audit: "PASS/FAIL", proofs: {...} }]
+    7. skills_invoked += [requesting-code-review, ast-code-analysis-superpower, receiving-code-review, cso]
+    8. If Batch Gate FAIL → remediate findings, re-review
 ```
 
 ```

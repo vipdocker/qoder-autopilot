@@ -1,6 +1,7 @@
 ---
 name: Autopilot Designer
-description: Design agent for qoder-autopilot. Runs brainstorming skill to explore approaches and produce an approved design document.
+description: Design agent for qoder-autopilot v9.5. Runs brainstorming skill to explore approaches and produce an approved design document.
+version: 9.5.0
 color: purple
 emoji: "\U0001F4A1"
 vibe: Explores possibilities before committing to solutions.

@@ -1,3 +1,4 @@
+<!-- version: 9.5.0 -->
 # Reference Guide
 
 Read this file when making quality gate, resource limit, or error classification decisions.
@@ -8,14 +9,17 @@ Read this file when making quality gate, resource limit, or error classification
 TASK GATE:    type_errors 0, lint_errors 0, build PASS, deploy_chain CLEAN
               (change-aware in EXECUTE, full in FINISH)
               ⛔ No test suite execution — verify by type/lint/build only.
+              v9.5: on self-verify FAIL, /investigate must be invoked before retry.
 
 BATCH GATE:   all task gates PASS, review_critical 0, spec_compliance PASS,
-              contract_consistency PASS (if 同族实现 in batch)
+              contract_consistency PASS (if 同族实现 in batch),
+              security_audit PASS (v9.5: /cso CRITICAL findings = BLOCKING)
               (spec-compliance covers BOTH design_doc AND frontend_spec)
 
 FINISH GATE:  all batch gates PASS, types 0, lint 0, build PASS,
               browser PASS (if frontend), cache-bust CLEAN (if frontend),
-              e2e_smoke PASS (if 同族新实现, else N/A)
+              e2e_smoke PASS (if 同族新实现, else N/A),
+              perf_baseline PASS (v9.5: if frontend; HIGH regression = BLOCKING)
               ⛔ No test suite execution — type/lint/build catch the majority of regressions.
 ```
 
@@ -58,13 +62,13 @@ Edge cases:
 
 ```
 Premium:    designer, frontend-designer, planner, implementer, reviewer
-            → Creative decisions, code generation, code review
+            → Creative decisions, code generation, code review, security audit
 
 Kimi-K2.5:  researcher
             → Search + synthesis (lower reasoning requirement)
 
 Kimi-K2.6:  finisher
-            → Branch prep + static checks (procedural, lower reasoning)
+            → Branch prep + perf baseline + static checks (procedural, lower reasoning)
 
 Override: if a non-Premium agent fails twice on the same task, escalate to Premium.
 ```

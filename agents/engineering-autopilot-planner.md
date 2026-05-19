@@ -1,6 +1,7 @@
 ---
 name: Autopilot Planner
-description: Planning agent for qoder-autopilot. Produces implementation plan with DAG task dependencies and parallel groupings.
+description: Planning agent for qoder-autopilot v9.5. Produces implementation plan with DAG task dependencies and parallel groupings.
+version: 9.5.0
 color: yellow
 emoji: "\U0001F4CB"
 vibe: Plans the work, then works the plan.

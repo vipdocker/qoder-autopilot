@@ -1,3 +1,4 @@
+<!-- version: 9.5.0 -->
 # Phase 2: DESIGN → Task() + conditional Task() → HUMAN GATE
 
 ## Phase 2A: BRAINSTORM → Task() — ALWAYS

@@ -1,3 +1,4 @@
+<!-- version: 9.5.0 -->
 # Phase 5: FINISH → Task() + VERIFY → Task() → HUMAN GATE
 
 **Three steps: 5A finisher (branch prep + static checks), 5B independent verification
@@ -6,7 +7,7 @@
 ## Phase 5A: FINISH → Task()
 
 AGENT: `engineering-autopilot-finisher.md`
-REQUIRED SKILLS: `finishing-a-development-branch`
+REQUIRED SKILLS: `finishing-a-development-branch`, `benchmark` (IF has_frontend)
 ASSIGNMENT: branch name, feature, has_frontend, frontend_spec path (if has_frontend), project path, change summary from change_registry
 
 ```
@@ -19,8 +20,9 @@ ASSIGNMENT: branch name, feature, has_frontend, frontend_spec path (if has_front
      - If has_frontend: basic render check
      - Prepare branch (commits, changelog)
 2. VERIFY: report has finishing-a-development-branch proof ✓
+   VERIFY: IF has_frontend → benchmark proof ✓
 3. Check Finish Gate: PASS/FAIL
-4. skills_invoked += [finishing-a-development-branch]
+4. skills_invoked += [finishing-a-development-branch, benchmark (if has_frontend)]
 ```
 
 ## ⛔ Phase 5B: INDEPENDENT VERIFICATION → Task() — MANDATORY
@@ -135,9 +137,11 @@ AFTER RECEIVING REPORT:
 ```
 HUMAN GATE: Present to user:
   - Finish Gate: {5A result}
+  - Performance Baseline: {5A perf_baseline result — PASS/REGRESSED/FIRST_RUN/N/A}
   - Verification: {5B result — architecture + style compliance}
   - If 5B FAIL: list specific deviations with fix suggestions
-  - Ask: "Merge strategy? (If verification failed, fix first or accept?)"
+  - If perf REGRESSED(HIGH): flag specific regressions
+  - Ask: "Merge strategy? (If verification/perf failed, fix first or accept?)"
 
 Write state: { current_phase: "AUDIT", human_gates.merge_strategy: "..." }
 

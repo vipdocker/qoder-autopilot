@@ -1,3 +1,4 @@
+<!-- version: 9.5.0 -->
 # Phase 6: DONE — Completion Report + Mandatory Self-Audit
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -8,8 +9,8 @@
 │ 2. Skills required this phase:             (audit)     │
 │ 3. Resuming after compression?             YES → reload│
 │ 4. skills_invoked so far: [{current list}]             │
-│    COUNT: {N} skills called out of 8 tracked           │
-│    ⚠️ If count < 7, something was DEFINITELY skipped   │
+│    COUNT: {N} skills called out of 12 tracked          │
+│    ⚠️ If count < 10, something was DEFINITELY skipped  │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -53,13 +54,17 @@ For each skill, paste the ACTUAL first line of output you received.
 |  4 | requesting-code-review         | ALWAYS    | YES/NO  | "____"                           |
 |  5 | receiving-code-review          | ALWAYS    | YES/NO  | "____"                           |
 |  6 | ast-code-analysis-superpower   | ALWAYS    | YES/NO  | "____"                           |
-|  7 | finishing-a-development-branch | ALWAYS    | YES/NO  | "____"                           |
-|  8 | frontend-design                | IF FRONT  | YES/N/A | "____" or "N/A — no frontend"    |
+|  7 | cso                            | ALWAYS    | YES/NO  | "____"                           |
+|  8 | finishing-a-development-branch | ALWAYS    | YES/NO  | "____"                           |
+|  9 | benchmark                      | IF FRONT  | YES/N/A | "____" or "N/A — no frontend"    |
+| 10 | investigate                    | IF FAIL   | YES/N/A | "____" or "N/A — no failures"    |
+| 11 | health                         | ALWAYS    | YES/NO  | "____"                           |
+| 12 | frontend-design                | IF FRONT  | YES/N/A | "____" or "N/A — no frontend"    |
 ```
 
 Count: `{called}` / `{required}` mandatory skills called.
 
-**If count < 7 (minimum for non-frontend) or < 8 (for frontend), there are definitely skipped skills.**
+**If count < 10 (minimum for non-frontend) or < 12 (for frontend with failures), there are definitely skipped skills.**
 
 ### Checklist B: Artifacts
 

@@ -1,6 +1,7 @@
 ---
 name: Autopilot Researcher
-description: Codebase and web research agent for qoder-autopilot v9.4. Analyzes existing code patterns, UI sibling naming conventions, API field naming conventions, and gathers external best practices.
+description: Codebase and web research agent for qoder-autopilot v9.5. Analyzes existing code patterns, UI sibling naming conventions, API field naming conventions, and gathers external best practices.
+version: 9.5.0
 color: cyan
 emoji: "\U0001F50E"
 vibe: Understands the codebase before touching it.

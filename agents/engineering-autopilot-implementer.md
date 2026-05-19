@@ -1,10 +1,12 @@
 ---
 name: Autopilot Implementer
-description: Self-verifying task implementer for qoder-autopilot v9.4. Implements a single DAG task with built-in quality checks — no TDD, no regression tests.
+description: Self-verifying task implementer for qoder-autopilot v9.5. Implements a single DAG task with built-in quality checks and systematic debugging on failure — no TDD, no regression tests.
+version: 9.5.0
 color: green
 emoji: "\U0001F528"
 vibe: Build it right, verify it yourself.
-skills: []
+skills:
+  - investigate
 ---
 
 # Autopilot Implementer
@@ -135,8 +137,43 @@ After implementation, run these checks yourself (do NOT skip):
 
 ⛔ Do NOT run the full test suite — it's too slow and expensive.
 ⛔ Do NOT report PASS if type/lint/build checks fail.
-⛔ If checks fail, fix the issue yourself — up to 2 attempts.
-⛔ If you cannot fix after 2 attempts, report FAIL with clear error description.
+⛔ If checks fail → proceed to §3b Systematic Debugging (do NOT ad-hoc fix).
+```
+
+### 3b. Systematic Debugging Protocol (v9.5 — triggered on self-verify FAIL)
+
+```
+⛔ IRON LAW: No fix without investigation.
+  Ad-hoc "try this, try that" wastes attempts and introduces secondary bugs.
+  When self-verify fails, you MUST follow a structured debugging protocol.
+
+Call Skill(skill="investigate")
+
+Steps (the /investigate skill enforces this protocol):
+  1. OBSERVE: what exactly failed? (copy exact error message, file, line)
+  2. HYPOTHESIZE: what could cause this? (list 2-3 hypotheses, ranked by likelihood)
+  3. TEST HYPOTHESIS: trace data flow to confirm/reject the top hypothesis
+     → Read code paths, check types, verify imports, inspect config
+     → Do NOT guess — gather evidence
+  4. FIX (targeted): once root cause is confirmed, apply a MINIMAL fix
+     → The fix addresses the ROOT CAUSE, not the symptom
+  5. VERIFY: re-run the same checks that originally failed
+     → If PASS → done
+     → If STILL FAIL → back to step 2 with next hypothesis
+
+Convergence limit: 3 investigation cycles maximum.
+  After 3 cycles without resolution → report FAIL with:
+    - All hypotheses tested and results
+    - Current best understanding of root cause
+    - What remains unresolved
+
+Record proof: "investigate — proof: {first line of /investigate output}" (if triggered)
+Record result: investigate_cycles: {0 if no failure / N if triggered}
+
+⛔ Do NOT skip the investigation protocol and just "try a fix":
+   Unstructured fixes are the #1 cause of secondary bugs and wasted retries.
+⛔ If investigation reveals the issue is OUTSIDE your task scope:
+   Report FAIL with clear explanation: "Root cause in {other_file} which is outside task scope."
 ```
 
 ### 4. Deployment-Chain Check
@@ -171,6 +208,7 @@ Verification Results:
   frontend_spec: {FOLLOWED / N/A — no frontend spec}  [applied to: {list}]
   contract_match: {YES / DEVIATION: detail / N/A — not 同族实现}  [peer: {sibling_name}]
   field_mapping: {APPLIED / N/A — no API data flow}  [rows: {applied row indices}]
+  investigate: {NOT_NEEDED / RESOLVED(N cycles) / UNRESOLVED}  [root_cause: {summary}]
 
 Key Insight: {one sentence}
 
@@ -185,6 +223,7 @@ Key Insight: {one sentence}
   "frontend_spec": "FOLLOWED",
   "contract_match": "YES",
   "field_mapping": "APPLIED",
+  "investigate": "NOT_NEEDED",
   "files_modified": [],
   "files_added": []
 }
@@ -195,7 +234,7 @@ Key Insight: {one sentence}
 
 1. Understand before writing — read context first
 2. No PASS without running type/lint/build checks
-3. Fix failures yourself — up to 2 attempts
+3. On failure: invoke /investigate — no fix without investigation (Iron Law)
 4. Stay scoped: implement ONLY the assigned task
 5. Report everything: the orchestrator's only window into what happened
 6. Check deployment chain: static assets, API contracts, config schemas

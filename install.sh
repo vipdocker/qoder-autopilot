@@ -1,5 +1,5 @@
 #!/bin/bash
-# Qoder Autopilot v9.4 — Install Script
+# Qoder Autopilot v9.5 — Install Script
 # Usage: bash install.sh
 
 set -e
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}Qoder Autopilot v9.4 — Installing...${NC}"
+echo -e "${CYAN}Qoder Autopilot v9.5 — Installing...${NC}"
 echo ""
 
 # ─── Pre-flight checks ───
@@ -140,16 +140,17 @@ if [ "$ERRORS" -eq 0 ]; then
   echo ""
   echo "Trigger: qoder-autopilot / 自动开发 / 全自动 / autopilot / 端到端开发"
   echo ""
-  echo -e "${CYAN}v9.4 changes from v9.3:${NC}"
-  echo "  - Cross-Layer Field Mapping Contract (5-layer defense for backend↔frontend field naming)"
-  echo "  - FAILURE 14: 跨层字段映射不一致 (e.g. backend user_name vs frontend userName, no conversion → undefined)"
-  echo "  - Researcher §4: API Field Naming Convention Scan (Pydantic alias / DRF source / struct json tags + frontend fetch/axios/TS)"
-  echo "  - Designer §2c: Field Mapping Contract chapter (per-endpoint table + conversion point + consistency diff)"
-  echo "  - Frontend Designer §2b: Honor Field Mapping Contract"
-  echo "  - Implementer §1e: Field Mapping Adherence + grep self-check + field_mapping JSON output"
-  echo "  - Reviewer: Cross-Layer Field Mapping Check + 6-row severity matrix + field_mapping_consistency JSON"
-  echo "  - Phase 1/2: mandatory dispatch + verify gate (re-dispatch on missing artifact)"
-  echo "  - Global Rule 14: cross-layer mapping mismatch = BLOCKER"
+  echo -e "${CYAN}v9.5 changes from v9.4:${NC}"
+  echo "  - /cso: Security audit (OWASP+STRIDE) in reviewer Phase 4B — security_audit quality gate, CRITICAL = BLOCKING"
+  echo "  - /benchmark: Performance baseline (Core Web Vitals) in finisher Phase 5A — perf_baseline field, IF frontend"
+  echo "  - /investigate: Systematic debugging (Iron Law, 3-cycle) in implementer Phase 4A — on self-verify FAIL"
+  echo "  - /health: Code quality score (5 dimensions + trend) in Phase 7 EVOLVE main session"
+  echo "  - Mandatory skills: 8 → 12 (+ cso, benchmark, investigate, health from gstack)"
+  echo "  - FAILURE MODES: 14 → 16 (+ 安全漏洞漏审, + 性能退化静默交付)"
+  echo "  - Global Rules: 14 → 18"
+  echo "  - Phase 6 audit checklist: 8 rows → 12 rows"
+  echo "  - Batch Gate: + security_audit PASS"
+  echo "  - Finish Gate: + perf_baseline PASS (if frontend)"
 else
   echo -e "${RED}Installation finished with errors. Check output above.${NC}"
   exit 1
