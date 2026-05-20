@@ -48,9 +48,32 @@ Steps:
 Call Skill(skill="frontend-design")
 ```
 
-Follow the skill's instructions completely. Design: component hierarchy, page layouts, interaction flows, responsive breakpoints, state management patterns, design tokens.
+⛔ **PIPELINE OVERRIDE**: The frontend-design skill may instruct you to "implement working code"
+or produce HTML/CSS/JS files. **IGNORE those instructions.** In this pipeline, your deliverable
+is a DESIGN SPECIFICATION (markdown document), NOT implementation code.
+
+Extract the skill's design thinking process — aesthetic direction, typography choices, color
+palette, spatial composition, motion/interaction concepts — and apply them to produce a
+structured spec document. Do NOT output any code files (HTML/CSS/JS/React).
+
+Your output is a spec that the implementer agent will later translate into code.
 
 Record proof.
+
+### 1c. Scope Guard (v9.5 — prevent context explosion)
+
+```
+⛔ HARD LIMITS on file reading during §1b:
+  - Read AT MOST 3 reference component files (pick the most relevant, not all)
+  - Read AT MOST 1 design tokens file (CSS vars / theme.js / tailwind.config)
+  - If research brief lists >5 reference components, pick top 3 by relevance
+  - Total file reads in §1 + §1b combined: MAX 8 (brief + design_doc + 3 components + tokens + 2 spare)
+  - If you cannot find design system info after 5 reads → STOP searching, flag in report:
+    "Design System: not found / minimal — designing with safe defaults"
+
+⛔ Do NOT recursively explore directories looking for patterns.
+   Trust the research brief. If it's not there, it doesn't exist for your purposes.
+```
 
 ### 2b. Honor Field Mapping Contract (v9.4 — IF design doc has Field Mapping Contract chapter)
 
