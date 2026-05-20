@@ -1,7 +1,7 @@
 ---
 name: qoder-autopilot
 description: "v9.5 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'."
-version: 9.5.2
+version: 9.5.3
 ---
 
 # Qoder Autopilot v9.5 — Lean Orchestrator
@@ -100,6 +100,25 @@ v9.5.2 changes (frontend-design dual-layer architecture):
     Pure backend tasks SKIP the skill — token discipline.
   Skill added to implementer: frontend-design (conditional). Mandatory skill count: 12 → 13.
   Phase 6 Checklist row 13 added: "frontend-design (gstack skill) — IF UI TASK".
+
+v9.5.3 changes (Phase 2B inline framework upgrade — absorbing plan-design-review essence):
+  EXPANDED Phase 2B inline design thinking from "6 dimensions, prose form" to a structured
+    self-rating framework (without calling external skill — keeps zero-runtime-dep advantage).
+  ADDED 2a: Surface Type classifier (MARKETING / APP_UI / HYBRID) — different rule sets per type.
+  ADDED 2b: 0-10 self-rating per each of the 6 dimensions, with mandatory gap+fix when <8.
+  ADDED 2c: Interaction State Coverage matrix (LOADING / EMPTY / ERROR / SUCCESS / PARTIAL)
+    per major component — empty/error states are FEATURES, not afterthoughts.
+  ADDED 2d: AI Slop Anti-Pattern Self-Check (11 patterns: purple gradient, 3-col feature grid,
+    icon-circles, centered-everything, bubbly border-radius, decorative blobs, emoji bullets,
+    colored left-border cards, generic hero copy, cookie-cutter rhythm, system-ui as primary).
+  ADDED 2e: Hard Rejection (7 instant-fail) + Litmus Checks (7 yes/no) self-checks.
+  ADDED 2f: Universal Red-Line Rules (CSS vars, no default font stacks, ≥16px body,
+    ≥4.5:1 contrast, no placeholder-as-only-label, visited-link distinction, etc).
+  Output Contract expanded: Surface Type, Dimension Ratings table, AI Slop / Litmus / Red-Line
+    self-check results — implementer reads these as concrete acceptance criteria.
+  Rationale: plan-design-review (1759 lines) provides excellent rules but is interactive,
+    gstack-coupled, and runtime-incompatible with non-interactive subagents. Inline the rules,
+    skip the runtime — keep stable, zero-token-overhead, self-contained design rigor.
 ```
 
 ---

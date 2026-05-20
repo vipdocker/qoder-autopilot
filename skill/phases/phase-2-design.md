@@ -1,4 +1,4 @@
-<!-- version: 9.5.0 -->
+<!-- version: 9.5.3 -->
 # Phase 2: DESIGN → Task() + conditional Task() → HUMAN GATE
 
 ## Phase 2A: BRAINSTORM → Task() — ALWAYS
@@ -44,7 +44,7 @@ IF state.has_frontend == true:
   1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
      Agent file: ~/.qoder/agents/engineering-autopilot-frontend-designer.md
      Assignment: { feature, requirements, design_doc_path, research_brief_path, project_path }
-  2. VERIFY: report has "Design Thinking: 6 dimensions addressed" ✓
+  2. VERIFY: report has "Design Thinking: classify(2a) + 6-dim/0-10(2b) + state-matrix(2c) + slop-check(2d) + litmus(2e) + red-lines(2f)" ✓
   3. Extract: frontend_spec path
   4. skills_invoked += [frontend-design-thinking]
 ELSE:

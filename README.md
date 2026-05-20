@@ -90,6 +90,8 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 | 13 | frontend-design | gstack | 实现 | implementer | IF UI TASK |
 
 > **v9.5.2 架构调整**：`frontend-design` skill 从 Phase 2B（designer）移到 Phase 4A（implementer），仅当 DAG 任务涉及 UI 文件时按需加载。Phase 2B 改用内联设计思维生成 spec 文档。这样 skill 的"产出代码"本意与 implementer 的"写代码"职责完美对齐，避免了 designer 阶段的指令冲突。
+>
+> **v9.5.3 内联框架升级**：Phase 2B 内联设计思维从"6 维度+文字描述"扩展为结构化自评审框架——吸收 gstack `plan-design-review` 的精华规则（**不**调用该 skill，避免其 1759 行 bash 前置和交互式 STOP 点对子代理的不兼容）。具体新增：surface 分类（MARKETING/APP_UI/HYBRID）、6 维度 0-10 自评分（<8 必须列出差距+修复方案）、交互状态矩阵（LOADING/EMPTY/ERROR/SUCCESS/PARTIAL）、AI Slop 反模式 11 项自检、Hard Rejection 7 项+ Litmus 7 项问答、Universal Red-Line 9 项硬约束。这套框架完全文本化、零 runtime 依赖，子代理可机器化执行；implementer 在 Phase 4A 读到这些自检结果作为可验证的实现验收标准。
 
 ### 模型分级
 
@@ -154,7 +156,7 @@ qoder-autopilot-package/
 - 来自 **superpowers**（6 个）：`brainstorming` · `writing-plans` · `dispatching-parallel-agents` · `requesting-code-review` · `receiving-code-review` · `finishing-a-development-branch`
 - 来自 **gstack**（5 个）：`frontend-design` · `cso` · `benchmark` · `investigate` · `health`
 - 来自 **prompts.chat**（1 个）：`ast-code-analysis-superpower`
-- **内联**（1 个）：`frontend-design-thinking`（v9.5.1 起内联于 frontend-designer agent，产出 spec 文档；不与 gstack frontend-design skill 冲突）
+- **内联**（1 个）：`frontend-design-thinking`（v9.5.1 起内联于 frontend-designer agent，产出 spec 文档；v9.5.3 升级为结构化 0-10 自评审框架 + AI Slop 11 项自检 + Litmus 7 项 + Red-Line 9 项硬约束；不与 gstack frontend-design skill 冲突）
 
 任一外部 skill 缺失都会导致对应 Phase 的 Agent 调用失败。frontend-design-thinking 为内联，无需安装。
 

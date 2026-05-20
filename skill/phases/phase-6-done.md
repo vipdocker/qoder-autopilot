@@ -1,4 +1,4 @@
-<!-- version: 9.5.2 -->
+<!-- version: 9.5.3 -->
 # Phase 6: DONE — Completion Report + Mandatory Self-Audit
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -59,7 +59,7 @@ For each skill, paste the ACTUAL first line of output you received.
 |  9 | benchmark                      | IF FRONT  | YES/N/A | "____" or "N/A — no frontend"    |
 | 10 | investigate                    | IF FAIL   | YES/N/A | "____" or "N/A — no failures"    |
 | 11 | health                         | ALWAYS    | YES/NO  | "____"                           |
-| 12 | frontend-design-thinking       | IF FRONT  | YES/N/A | "Design Thinking: 6 dimensions" or "N/A — no frontend" |
+| 12 | frontend-design-thinking       | IF FRONT  | YES/N/A | "Design Thinking: classify(2a) + 6-dim/0-10(2b) + state-matrix(2c) + slop-check(2d) + litmus(2e) + red-lines(2f)" or "N/A — no frontend" |
 | 13 | frontend-design (gstack skill) | IF UI TASK | YES/N/A | "____" or "N/A — no UI files in any task" |
 ```
 
