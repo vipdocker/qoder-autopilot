@@ -1,4 +1,4 @@
-<!-- version: 9.5.0 -->
+<!-- version: 9.5.2 -->
 # Phase 4: EXECUTE + REVIEW
 
 **TWO mandatory parts per batch: 4A (implement) and 4B (review).**
@@ -10,7 +10,7 @@ FOR each batch of READY tasks in DAG:
 ## Phase 4A: IMPLEMENT BATCH → Task() × N
 
 AGENT: `engineering-autopilot-implementer.md`
-REQUIRED SKILLS: (none enforced by orchestrator — implementer self-verifies)
+REQUIRED SKILLS: `investigate` (on-fail), `frontend-design` (IF task touches UI files)
 ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_doc path, frontend_spec path (if has_frontend), project path
 
 ```
@@ -22,7 +22,9 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
     2. CHECK report status: PASS or FAIL
        → If FAIL with clear error: re-dispatch ONCE with error context
        → If FAIL twice: mark task BLOCKED, surface to user
-    3. Update state: dag[id].status, dag[id].proofs, change_registry[id]
+    3. VERIFY: frontend_aesthetics field present in report (APPLIED if UI files, else N/A)
+    4. Update state: dag[id].status, dag[id].proofs, change_registry[id]
+       → IF frontend_aesthetics == APPLIED: skills_invoked += [frontend-design]
 
   ⛔ ALL tasks in batch must be DONE before proceeding to 4B.
 ```

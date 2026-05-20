@@ -69,14 +69,14 @@ Agents:         ~/.qoder/agents/                       (7 files)
 Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 ```
 
-### 12 个必选技能
+### 13 个必选技能
 
 > 以下技能分别来自 **superpowers**、**gstack**、**prompts.chat** 三个上游项目，安装本 skill 之前必须先完成它们的安装。详见下文 [依赖项](#依赖项--dependencies) 章节。
 
 | # | 技能 | 来源 | 阶段 | Agent | 条件 |
 |---|------|------|------|-------|------|
 | 1 | brainstorming | superpowers | 设计 | designer | ALWAYS |
-| 2 | frontend-design | gstack | 设计 | frontend-designer | IF FRONT |
+| 2 | frontend-design-thinking | (内联) | 设计 | frontend-designer | IF FRONT |
 | 3 | writing-plans | superpowers | 规划 | planner | ALWAYS |
 | 4 | dispatching-parallel-agents | superpowers | 规划 | planner | ALWAYS |
 | 5 | requesting-code-review | superpowers | 审查 | reviewer | ALWAYS |
@@ -87,6 +87,9 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 | 10 | benchmark | gstack | 收尾 | finisher | IF FRONT |
 | 11 | investigate | gstack | 实现 | implementer | IF FAIL |
 | 12 | health | gstack | 进化 | (主会话) | ALWAYS |
+| 13 | frontend-design | gstack | 实现 | implementer | IF UI TASK |
+
+> **v9.5.2 架构调整**：`frontend-design` skill 从 Phase 2B（designer）移到 Phase 4A（implementer），仅当 DAG 任务涉及 UI 文件时按需加载。Phase 2B 改用内联设计思维生成 spec 文档。这样 skill 的"产出代码"本意与 implementer 的"写代码"职责完美对齐，避免了 designer 阶段的指令冲突。
 
 ### 模型分级
 
@@ -144,15 +147,16 @@ qoder-autopilot-package/
 | **gstack** | [garrytan/gstack](https://github.com/garrytan/gstack) | Garry Tan 的 Claude Code 配置集合（43+ skills）。提供设计/安全/性能/排错/健康类技能 | 5：frontend-design · cso · benchmark · investigate · health |
 | **prompts.chat** | 站点：[prompts.chat](https://prompts.chat) · 仓库：[f/prompts.chat](https://github.com/f/prompts.chat) | Fatih Kadir Akın 维护的开源 prompt 库（前身：awesome-chatgpt-prompts）。提供 AST 级代码静态分析的 prompt template | 1：[ast-code-analysis-superpower](https://prompts.chat/prompts/cmjmk2f8i000bld04ikqh7i78_ast-code-analysis-superpower) |
 
-### 必选 skill（12 个，分布在三个上游）
+### 必选 skill（13 个，分布在三个上游 + 内联）
 
-来源详见上文 [12 个必选技能](#12-个必选技能) 表。
+来源详见上文 [13 个必选技能](#13-个必选技能) 表。
 
 - 来自 **superpowers**（6 个）：`brainstorming` · `writing-plans` · `dispatching-parallel-agents` · `requesting-code-review` · `receiving-code-review` · `finishing-a-development-branch`
 - 来自 **gstack**（5 个）：`frontend-design` · `cso` · `benchmark` · `investigate` · `health`
 - 来自 **prompts.chat**（1 个）：`ast-code-analysis-superpower`
+- **内联**（1 个）：`frontend-design-thinking`（v9.5.1 起内联于 frontend-designer agent，产出 spec 文档；不与 gstack frontend-design skill 冲突）
 
-任一缺失都会导致对应 Phase 的 Agent 调用失败。
+任一外部 skill 缺失都会导致对应 Phase 的 Agent 调用失败。frontend-design-thinking 为内联，无需安装。
 
 ### 可选依赖
 

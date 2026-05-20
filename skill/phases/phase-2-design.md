@@ -36,7 +36,7 @@ ASSIGNMENT: feature, requirements, research_brief path, project path
 ## Phase 2B: FRONTEND DESIGN → Task() — IF has_frontend=true
 
 AGENT: `engineering-autopilot-frontend-designer.md`
-REQUIRED SKILLS: `frontend-design`
+REQUIRED SKILLS: (none — inline design thinking protocol, no external skill call)
 ASSIGNMENT: feature, requirements, design_doc path, research_brief path, project path
 
 ```
@@ -44,9 +44,9 @@ IF state.has_frontend == true:
   1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
      Agent file: ~/.qoder/agents/engineering-autopilot-frontend-designer.md
      Assignment: { feature, requirements, design_doc_path, research_brief_path, project_path }
-  2. VERIFY: report has frontend-design proof ✓
+  2. VERIFY: report has "Design Thinking: 6 dimensions addressed" ✓
   3. Extract: frontend_spec path
-  4. skills_invoked += [frontend-design]
+  4. skills_invoked += [frontend-design-thinking]
 ELSE:
   Skip 2B. Record: "frontend-design: N/A — has_frontend=false"
 ```

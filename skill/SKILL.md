@@ -1,7 +1,7 @@
 ---
 name: qoder-autopilot
 description: "v9.5 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'."
-version: 9.5.0
+version: 9.5.2
 ---
 
 # Qoder Autopilot v9.5 — Lean Orchestrator
@@ -83,6 +83,23 @@ v9.5 changes (Security + Performance + Systematic Debugging + Health):
     2+ consecutive runs = HIGH-priority evolution proposal.
   NEW FAILURE 15: 安全漏洞漏审 — Reviewer 无安全维度，OWASP/STRIDE 类问题到生产才被发现
   NEW FAILURE 16: 性能退化静默交付 — 无 baseline 比较，Core Web Vitals 退化未被检测
+
+v9.5.1 changes (frontend-design relocation, part 1 — superseded by v9.5.2):
+  CHANGED Phase 2B Frontend Designer: removed Skill("frontend-design") call. Skill's
+    code-generation purpose conflicted with agent's spec-document deliverable, causing
+    subagent hangs even with override text. Replaced with inline 6-dimension design
+    thinking protocol (aesthetic/typography/color/layout/motion/components).
+
+v9.5.2 changes (frontend-design dual-layer architecture):
+  RELOCATED frontend-design skill from Phase 2B (designer) to Phase 4A (implementer).
+    Rationale: skill's "produce production-grade frontend code" intent matches
+    implementer's job (write code), not designer's job (write spec).
+  Phase 2B keeps inline design thinking → produces SPEC document.
+  Phase 4A implementer conditionally calls Skill("frontend-design") IF task.changed_files
+    contains UI extensions (.tsx/.jsx/.vue/.svelte/.astro/.html/.css/.scss/.sass/.less).
+    Pure backend tasks SKIP the skill — token discipline.
+  Skill added to implementer: frontend-design (conditional). Mandatory skill count: 12 → 13.
+  Phase 6 Checklist row 13 added: "frontend-design (gstack skill) — IF UI TASK".
 ```
 
 ---
@@ -362,11 +379,11 @@ At each phase: Read the phase file → execute its protocol → update state →
 |---|---|---|---|---|
 | 0: INTAKE | `phases/phase-0-intake.md` | (main session) | — | Human Gate: requirements |
 | 1: RESEARCH | `phases/phase-1-research.md` | researcher | — | research_brief exists |
-| 2: DESIGN | `phases/phase-2-design.md` | designer + frontend-designer | brainstorming, frontend-design (IF FE) | Human Gate: design |
+| 2: DESIGN | `phases/phase-2-design.md` | designer + frontend-designer | brainstorming, frontend-design-thinking (IF FE, inline) | Human Gate: design |
 | 3: PLAN | `phases/phase-3-plan.md` | planner | writing-plans, dispatching-parallel-agents | DAG + plan_doc exist |
-| 4: EXECUTE | `phases/phase-4-execute.md` | implementer ×N + reviewer | investigate (on-fail), cso, requesting-code-review, ast-code-analysis, receiving-code-review | batch_reviews non-empty |
+| 4: EXECUTE | `phases/phase-4-execute.md` | implementer ×N + reviewer | investigate (on-fail), frontend-design (IF UI files), cso, requesting-code-review, ast-code-analysis, receiving-code-review | batch_reviews non-empty |
 | 5: FINISH | `phases/phase-5-finish.md` | finisher + verifier | finishing-a-development-branch, benchmark (IF FE) | Verification + Human Gate |
-| 6: AUDIT | `phases/phase-6-done.md` | (main session) | — | 12-skill checklist pass |
+| 6: AUDIT | `phases/phase-6-done.md` | (main session) | — | 13-skill checklist pass |
 | 7: EVOLVE | `phases/phase-7-evolve.md` | (main session) | health | retro saved |
 
 ⛔ For each phase: `Read("phases/phase-N-*.md")` BEFORE executing. The phase file is the source of truth.
@@ -416,7 +433,7 @@ Phase 5A: FINISH        [finisher]        Branch prep + validation
 Phase 5B: VERIFY        [verifier Task]   Architecture + frontend style compliance
     │                                      Human Gate (with verification results)
     │
-Phase 6: AUDIT          [main session]    12-skill checklist, remediation
+Phase 6: AUDIT          [main session]    13-skill checklist, remediation
     │
 Phase 7: EVOLVE         [main session]    Retro → /health score → gbrain → .retro.md
 ```

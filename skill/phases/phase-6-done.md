@@ -1,4 +1,4 @@
-<!-- version: 9.5.0 -->
+<!-- version: 9.5.2 -->
 # Phase 6: DONE — Completion Report + Mandatory Self-Audit
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -59,12 +59,13 @@ For each skill, paste the ACTUAL first line of output you received.
 |  9 | benchmark                      | IF FRONT  | YES/N/A | "____" or "N/A — no frontend"    |
 | 10 | investigate                    | IF FAIL   | YES/N/A | "____" or "N/A — no failures"    |
 | 11 | health                         | ALWAYS    | YES/NO  | "____"                           |
-| 12 | frontend-design                | IF FRONT  | YES/N/A | "____" or "N/A — no frontend"    |
+| 12 | frontend-design-thinking       | IF FRONT  | YES/N/A | "Design Thinking: 6 dimensions" or "N/A — no frontend" |
+| 13 | frontend-design (gstack skill) | IF UI TASK | YES/N/A | "____" or "N/A — no UI files in any task" |
 ```
 
 Count: `{called}` / `{required}` mandatory skills called.
 
-**If count < 10 (minimum for non-frontend) or < 12 (for frontend with failures), there are definitely skipped skills.**
+**If count < 10 (no frontend, no failures) or < 13 (frontend project with UI tasks + failures), there are definitely skipped skills.**
 
 ### Checklist B: Artifacts
 
