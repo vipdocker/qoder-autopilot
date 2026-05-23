@@ -1,4 +1,4 @@
-<!-- version: 9.5.0 -->
+<!-- version: 9.5.4 -->
 # Reference Guide
 
 Read this file when making quality gate, resource limit, or error classification decisions.
@@ -39,23 +39,33 @@ Parse error messages and agent reports against these patterns:
 ├─────────────┼───────────────────────────────────────────────────────────────┼─────────────────────────┤
 │ TRANSIENT   │ "timeout", "ECONNREFUSED", "rate limit", "429", "503",        │ WAIT with backoff:      │
 │             │ "529", "socket hang up", "ECONNRESET", "service unavailable", │   30s → 60s → 120s     │
-│             │ "temporarily unavailable", "overloaded", "try again later"    │ Max 3 retries.          │
-│             │                                                               │ Then → BLOCKED.         │
+│             │ "temporarily unavailable", "overloaded", "try again later",   │ Max 3 retries.          │
+│             │ agent produces no output at all (likely crash/idle timeout)   │ Then → SHRINKAGE.       │
 ├─────────────┼───────────────────────────────────────────────────────────────┼─────────────────────────┤
-│ CODE        │ Everything else: type errors, lint errors, build failures,    │ FIX + retry.            │
-│             │ logic bugs, import errors, missing files, test failures,      │ Counts against          │
-│             │ compilation errors, runtime exceptions                        │ convergence limit.      │
+│ MALFORMED   │ JSON block missing/unparseable, required fields absent        │ CORRECTIVE retry        │
+│ (v9.5.4)    │ (status/gate/proofs_summary), output truncated mid-section,   │ (prefix + same          │
+│             │ skill proof claims missing while output present, status field │  assignment).           │
+│             │ empty, gate field empty, contradictory text vs JSON           │ Max 2. Then SHRINKAGE.  │
+├─────────────┼───────────────────────────────────────────────────────────────┼─────────────────────────┤
+│ CODE        │ Type errors, lint errors, build failures, logic bugs,         │ CORRECTIVE retry.       │
+│             │ import errors, missing files, runtime exceptions,             │ Counts against          │
+│             │ agent reports gate FAIL with non-transient cause              │ convergence limit.      │
 │             │                                                               │ (high:3, med:2, low:1)  │
 └─────────────┴───────────────────────────────────────────────────────────────┴─────────────────────────┘
 
-Priority: FATAL patterns take precedence.
+Priority: FATAL > MALFORMED > TRANSIENT > CODE.
   Example: "unauthorized: process exited with code 1" → FATAL (not CODE).
+  Example: agent timed out + output truncated → TRANSIENT (timeout is the root cause, not malformed output).
 
 Edge cases:
   - Agent produces no output at all → classify as TRANSIENT (likely crash/timeout)
   - Agent produces partial output + error → classify based on error message
-  - 3 consecutive TRANSIENT retries all fail → escalate to BLOCKED
+  - Agent produces full text but no --- JSON --- block → MALFORMED (use corrective retry, not transient)
+  - 3 consecutive TRANSIENT retries all fail → escalate to PROMPT SHRINKAGE (not BLOCKED yet)
+  - 2 consecutive CODE/MALFORMED corrective retries fail → escalate to PROMPT SHRINKAGE
+  - SHRINKAGE retry fails → BLOCKED, surface attempts trace
   - ENV_FAILURE (dependency corrupt, OOM) → auto-repair once, then reclassify as CODE
+  - See SKILL.md §UNIVERSAL RETRY PROTOCOL for the full decision tree binding these rules.
 ```
 
 ## Model Tiers
@@ -104,10 +114,13 @@ If not available (no streaming telemetry), fall back to total timeout only.
 ```
 Task:   max retries by confidence (high:3, medium:2, low:1)
         ⚠️ Only CODE-class errors count. TRANSIENT retries are separate.
+        ⚠️ MALFORMED (v9.5.4) corrective retries: max 2, then escalate to SHRINKAGE.
 Batch:  max 2 replans, must show improvement
 Design: max 2 outer iterations
 Oscillation: same/worse quality after retry → STOP
 Resource: total_turns > budget → STOP, full report
+Retry escalation chain (v9.5.4): TRANSIENT×3 → CORRECTIVE×2 → SHRINKAGE×1 → BLOCKED.
+                                  Each layer's exhaustion triggers the next, not BLOCKED directly.
 ```
 
 ## DAG Scheduling Rules

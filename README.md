@@ -92,6 +92,8 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 > **v9.5.2 架构调整**：`frontend-design` skill 从 Phase 2B（designer）移到 Phase 4A（implementer），仅当 DAG 任务涉及 UI 文件时按需加载。Phase 2B 改用内联设计思维生成 spec 文档。这样 skill 的"产出代码"本意与 implementer 的"写代码"职责完美对齐，避免了 designer 阶段的指令冲突。
 >
 > **v9.5.3 内联框架升级**：Phase 2B 内联设计思维从"6 维度+文字描述"扩展为结构化自评审框架——吸收 gstack `plan-design-review` 的精华规则（**不**调用该 skill，避免其 1759 行 bash 前置和交互式 STOP 点对子代理的不兼容）。具体新增：surface 分类（MARKETING/APP_UI/HYBRID）、6 维度 0-10 自评分（<8 必须列出差距+修复方案）、交互状态矩阵（LOADING/EMPTY/ERROR/SUCCESS/PARTIAL）、AI Slop 反模式 11 项自检、Hard Rejection 7 项+ Litmus 7 项问答、Universal Red-Line 9 项硬约束。这套框架完全文本化、零 runtime 依赖，子代理可机器化执行；implementer 在 Phase 4A 读到这些自检结果作为可验证的实现验收标准。
+>
+> **v9.5.4 Dispatch 重试与自我修正协议**：每个 dispatch 失败后，orchestrator 不再依赖"是否记得 STEP 5"靠直觉重试，而是必须走 SKILL.md 新增的 `UNIVERSAL RETRY PROTOCOL` 决策树：CLASSIFY（FATAL / TRANSIENT / CODE / **MALFORMED**）→ TRANSIENT 指数退避×3 → CODE/MALFORMED corrective prefix×2 → PROMPT SHRINKAGE×1 → BLOCKED。新增 MALFORMED 错误类（JSON 缺失、字段缺失、输出截断），与 CODE 区分但走相同 corrective 路径。每个 phase 文件可声明 `## RETRY HINT` 段落定义自己的 shrinkage 策略。Phase 3 PLAN 的 RETRY HINT：缩减时砍掉 baseline signature 表内嵌、per-task AC 枚举、规划 rationale 散文，只保留 DAG 拓扑（节点 + depends_on + T_contract_*）这一不可压缩核心；签名核对自动落到 implementer（Phase 4A 已通过 CTP Layer 4 "Peer Read-Before-Code" 读 research_brief）。state.json 新增 `dag[id].attempts` 字段记录每次重试的 class/action/prompt_variant/result，BLOCKED 时呈现完整 trace 给用户。新增 FAILURE 17 + Global Rule 19。
 
 ### 模型分级
 

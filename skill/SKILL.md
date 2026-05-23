@@ -1,7 +1,7 @@
 ---
 name: qoder-autopilot
-description: "v9.5 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'."
-version: 9.5.3
+description: "v9.5 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.5.4: 统一 dispatch retry + self-correction 协议。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'."
+version: 9.5.4
 ---
 
 # Qoder Autopilot v9.5 — Lean Orchestrator
@@ -119,6 +119,26 @@ v9.5.3 changes (Phase 2B inline framework upgrade — absorbing plan-design-revi
   Rationale: plan-design-review (1759 lines) provides excellent rules but is interactive,
     gstack-coupled, and runtime-incompatible with non-interactive subagents. Inline the rules,
     skip the runtime — keep stable, zero-token-overhead, self-contained design rigor.
+
+v9.5.4 changes (Dispatch Retry & Self-Correction Protocol):
+  ADDED UNIVERSAL RETRY PROTOCOL — concrete decision tree embedded in every dispatch flow.
+    Replaces "orchestrator should follow STEP 5 if it remembers". Now retry logic is a
+    first-class section the orchestrator MUST consult after any failed dispatch.
+  ADDED MALFORMED failure class (between TRANSIENT and CODE): JSON block missing, required
+    fields absent, or output truncated. Treat as CODE for retry purposes but tagged separately
+    in state for trend analysis.
+  ADDED 4-step retry decision tree: classify → TRANSIENT backoff → CODE/MALFORMED corrective
+    prefix → PROMPT SHRINKAGE last-resort → BLOCKED with full attempt history.
+  ADDED phase-level RETRY HINT — each high-risk phase file MAY declare a shrinkage strategy
+    specific to its agent's workload (what to drop on the last-resort retry).
+  Phase 3 RETRY HINT (planner): on shrinkage retry, drop full Baseline Signature Table
+    embedding from plan_doc — reference research_brief by path only. Per-task AC enumeration
+    becomes responsibility of implementer (Phase 4A reads research_brief directly).
+  Rationale: Phase 3 PLAN dispatch failures observed in practice (planner asked to embed full
+    baseline signatures + per-task ACs + DAG hits context limits). Need graceful degradation,
+    not blind retry.
+  NEW FAILURE 17: dispatch 卡死/截断后盲目重试，未做分类与渐进降级 → 反复失败、用户介入晚
+  NEW state field: dag[id].attempts = [{ class, action, prompt_variant, result, ts }]
 ```
 
 ---
@@ -245,6 +265,134 @@ FAILURE 16 (v9.5): 性能退化静默交付 — 无 baseline 导致 Core Web Vit
   FIX (v9.5) → Phase 5A Finisher 前端强制 /benchmark 性能基线比较。
     perf_baseline scorecard 字段。HIGH 回归 = Finish Gate FAIL。
     Performance Regression Matrix 内置于 finisher agent。
+
+FAILURE 17 (v9.5.4): dispatch 失败后盲目重试 / 静默放弃 — orchestrator 缺乏统一的重试
+  与降级路径，导致同样的过载 prompt 反复触发同样的失败，或者用户介入晚到无法挽救。
+  Root cause: STEP 5 的错误分类规则散落在 SKILL.md 与 reference.md，依赖 orchestrator
+  LLM 在长 context 中"记得"应用。Phase 文件本身是 5 行直线流程，没有显式 retry 分支。
+  当 planner 因 prompt 过大（baseline signature 表 + per-task AC + DAG）而超时/截断时，
+  orchestrator 要么再发同一份 prompt（浪费），要么直接放弃（用户介入晚）。
+  Typical symptoms:
+    - "Phase 3 PLAN dispatch 失败，重试也失败" 反复出现
+    - state.json 没有 attempts 历史，user 无法判断为何 BLOCKED
+    - 同一个 prompt 重发 3 次都因为 context overflow 失败，没人想到要缩小
+    - TRANSIENT 网络错误被当 CODE 处理（白白消耗 convergence retries）
+  FIX (v9.5.4) → UNIVERSAL RETRY PROTOCOL 4 阶段决策树（见下方独立章节）：
+    1. CLASSIFY (FATAL/TRANSIENT/CODE/MALFORMED)
+    2. TRANSIENT → exponential backoff 同 prompt 重试 (max 3)
+    3. CODE/MALFORMED → corrective prefix 重试 (max 2)
+    4. PROMPT SHRINKAGE → 按 phase 文件 RETRY HINT 缩减 prompt (max 1) → 仍失败 = BLOCKED
+    每次尝试写入 state.dag[id].attempts，BLOCKED 时呈现完整重试历史给用户。
+    Phase 3 RETRY HINT：缩减时砍掉 baseline signature 表内嵌，只保留 DAG + AC 索引。
+---
+
+## UNIVERSAL RETRY PROTOCOL (v9.5.4)
+
+⛔ This is a MANDATORY decision tree for ANY failed dispatch. The phase file `Read` does NOT
+   replace this — it complements it. After parsing the agent result (DISPATCH STEP 3),
+   if the result is missing/malformed/FAIL, enter this protocol BEFORE advancing or escalating.
+
+```
+TRIGGERS (any one):
+  • Task() throws exception
+  • Agent produces no output (empty stdout/stderr)
+  • Output truncated (no closing JSON block, partial markdown)
+  • --- JSON --- block missing or unparseable
+  • JSON parses but required fields absent (status, gate, proofs_summary)
+  • Agent reports status: "FAIL" with retryable error class
+  • Required skill proof missing from Skills Called list
+
+═══════════════════════════════════════════════════════════════════════════════════
+STEP A — CLASSIFY (always first)
+═══════════════════════════════════════════════════════════════════════════════════
+Apply Error Classification (reference.md). Possible classes:
+
+  FATAL       → STOP. Mark BLOCKED. Surface to user immediately. NO retry.
+                Examples: 401, 403, quota exceeded, account suspended.
+
+  TRANSIENT   → Step B (backoff retry).
+                Examples: timeout, ECONNRESET, 429, 503, no output (likely crash).
+
+  CODE        → Step C (corrective retry).
+                Examples: type error, lint fail, gate FAIL, logic bug in agent output.
+
+  MALFORMED   → Step C (corrective retry, tagged separately for trend analysis).
+                Examples: JSON block missing, required field absent, output truncated
+                mid-section, status field empty, gate field empty, proofs_summary missing.
+
+═══════════════════════════════════════════════════════════════════════════════════
+STEP B — TRANSIENT RETRY (backoff, same prompt)
+═══════════════════════════════════════════════════════════════════════════════════
+Wait 30s → 60s → 120s. Re-dispatch the EXACT SAME prompt (no modification).
+Max 3 attempts. After 3 TRANSIENT retries all fail → jump to STEP D (shrinkage).
+
+   for attempt in 1, 2, 3:
+       sleep(30 * 2^(attempt-1))
+       result = Task(SAME prompt)
+       if result is OK:  return SUCCESS
+       reclassify; if still TRANSIENT and attempt < 3: continue
+       else: break out
+   if all 3 transient → STEP D
+
+═══════════════════════════════════════════════════════════════════════════════════
+STEP C — CODE/MALFORMED CORRECTIVE RETRY (prefix + same assignment)
+═══════════════════════════════════════════════════════════════════════════════════
+Compose corrective prefix:
+   ```
+   ⚠️ PREVIOUS ATTEMPT FAILED.
+   Failure class: {CODE | MALFORMED}
+   Specific reason: {one line — e.g., "JSON block missing", "DAG has no T_contract task",
+                                       "spec_compliance field missing", "no skill proof for X"}
+   Required output items missing: {list from Output Contract}
+   Re-do the task. Pay special attention to producing a complete Output Contract,
+   including the --- JSON --- block at the very end.
+   ```
+Prepend to the original assignment. Re-dispatch.
+Max 2 corrective attempts. If both fail → jump to STEP D (shrinkage).
+
+═══════════════════════════════════════════════════════════════════════════════════
+STEP D — PROMPT SHRINKAGE RETRY (last resort before BLOCKED)
+═══════════════════════════════════════════════════════════════════════════════════
+Read the phase file's `## RETRY HINT` section. If present, apply its shrinkage rule.
+If the phase has no RETRY HINT, apply default shrinkage:
+   • Drop optional/auxiliary output sections (everything not in the gate-blocking checklist)
+   • Drop non-essential context embedding (reference docs by path only)
+   • Keep all gate-blocking deliverables intact
+
+Re-dispatch ONCE with the shrunk prompt. If shrinkage fails → STEP E (BLOCKED).
+
+═══════════════════════════════════════════════════════════════════════════════════
+STEP E — BLOCKED (final state)
+═══════════════════════════════════════════════════════════════════════════════════
+   state.dag[id].status = "BLOCKED"
+   state.dag[id].last_error.terminal = true
+   Surface to user the COMPLETE attempts trace from state.dag[id].attempts:
+     "Phase {N} BLOCKED after {n_attempts} attempts.
+      Trace: [TRANSIENT×3 backoff] → [CODE corrective×2] → [SHRINKAGE×1] → all failed.
+      Last error: {message}.
+      Suggested action: {one-line recommendation}."
+   Release concurrency lock. Stop.
+
+═══════════════════════════════════════════════════════════════════════════════════
+RECORDING (after EVERY attempt, success or fail)
+═══════════════════════════════════════════════════════════════════════════════════
+   state.dag[id].attempts.append({
+     "n": attempt_number,
+     "class": "FATAL|TRANSIENT|CODE|MALFORMED|OK",
+     "action": "initial|backoff|corrective|shrinkage",
+     "prompt_variant": "default|corrective|shrunk",
+     "result": "OK|FAIL|TIMEOUT",
+     "ts": ISO8601_now,
+     "message": "{trimmed}"
+   })
+   Write state.json IMMEDIATELY (before next attempt or phase advance).
+```
+
+⛔ NEVER silently advance after a failed dispatch — always traverse this protocol.
+⛔ NEVER skip CLASSIFY (Step A) — wrong class = wrong retry strategy = wasted attempts.
+⛔ NEVER reuse the same prompt after CODE/MALFORMED — that's the definition of insanity.
+⛔ NEVER hit BLOCKED without exhausting STEP D — graceful degradation comes before user escalation.
+
 ---
 
 ## UNIVERSAL DISPATCH PROTOCOL
@@ -289,13 +437,12 @@ STEP 4 — RECORD IMMEDIATELY (v9.0: immediate artifact write)
   b. This ensures: if context compression happens BETWEEN dispatches,
      all prior results are already persisted in state.
 
-STEP 5 — ERROR CLASSIFICATION (v9.0: three-tier)
-  IF agent reports FAIL or dispatch throws:
-    CLASSIFY the error (see reference.md "Error Classification"):
-      FATAL    → mark BLOCKED, surface to user immediately, do NOT retry
-      TRANSIENT → wait (exponential backoff: 30s, 60s, 120s), retry same dispatch
-      CODE     → fix context retry (count against convergence limit)
-    Record error_class in state: dag[id].last_error = { class, message, attempt }
+STEP 5 — ON FAILURE → ENTER UNIVERSAL RETRY PROTOCOL (v9.5.4)
+  IF dispatch failed (no output / malformed / FAIL / exception):
+    → DO NOT decide retry inline. Jump to "## UNIVERSAL RETRY PROTOCOL" below.
+    → That protocol is the single source of truth for retry decisions across ALL phases.
+    → It will: classify (FATAL/TRANSIENT/CODE/MALFORMED) → backoff or correct or shrink → BLOCKED.
+    → Every attempt is recorded in state.dag[id].attempts.
 ```
 
 ---
@@ -365,7 +512,7 @@ Write BEFORE and AFTER every Task(). Read at start of every phase.
   "has_frontend": true,
   "skills_invoked": [],
   "dag": {
-    "T1": { "status": "done", "proofs": {}, "last_error": null }
+    "T1": { "status": "done", "proofs": {}, "last_error": null, "attempts": [] }
   },
   "change_registry": { "T1": { "files_modified": [], "files_added": [] } },
   "batch_reviews": [],
@@ -501,6 +648,7 @@ Phase 7: EVOLVE         [main session]    Retro → /health score → gbrain →
 16. **Performance baseline before ship.** Phase 5A finisher MUST invoke /benchmark (when has_frontend). Regression against baseline = HIGH blocking. No silent perf degradation.
 17. **Structured debugging on failure.** Phase 4A implementer MUST invoke /investigate when self-verify fails. Iron Law: no fix without investigation. Replaces ad-hoc retry.
 18. **Health score in every retro.** Phase 7 orchestrator MUST invoke /health and record the composite score. Trend tracking across runs. DECLINING 2+ runs = HIGH-priority evolution proposal.
+19. **Retry by protocol, not by instinct (v9.5.4).** When ANY dispatch fails, traverse the UNIVERSAL RETRY PROTOCOL section — DO NOT decide retry strategy ad-hoc. Classify first (FATAL/TRANSIENT/CODE/MALFORMED), then apply the matching path (BLOCKED / backoff / corrective / shrinkage). Every attempt is recorded in state.dag[id].attempts. NEVER reuse same prompt after CODE/MALFORMED. NEVER reach BLOCKED without exhausting prompt shrinkage first.
 
 ---
 
