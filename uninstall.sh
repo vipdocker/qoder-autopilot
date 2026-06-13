@@ -1,5 +1,5 @@
 #!/bin/bash
-# Qoder Autopilot v9.4 — Uninstall Script
+# Qoder Autopilot v9.6 — Uninstall Script
 # Usage: bash uninstall.sh
 
 set -e
@@ -9,7 +9,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}Qoder Autopilot v9.4 — Uninstalling...${NC}"
+echo -e "${CYAN}Qoder Autopilot v9.6 — Uninstalling...${NC}"
 echo ""
 
 # ─── Remove skill (primary + symlink) ───

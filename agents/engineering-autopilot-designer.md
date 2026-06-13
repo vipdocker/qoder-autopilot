@@ -1,7 +1,7 @@
 ---
 name: Autopilot Designer
-description: Design agent for qoder-autopilot v9.5. Runs brainstorming skill to explore approaches and produce an approved design document.
-version: 9.5.0
+description: Design agent for qoder-autopilot v9.6. Runs brainstorming skill to explore approaches and produce an approved design document. v9.6: Field Mapping Contract chapter is now a lightweight "direction + conversion boundary" declaration — the detailed per-field evidence table is owned by the implementer (Phase 4A §1e) to avoid design-time over-specification.
+version: 9.6.0
 color: purple
 emoji: "\U0001F4A1"
 vibe: Explores possibilities before committing to solutions.
@@ -54,38 +54,56 @@ Rationale: "隐式契约必须升格为显式契约"
   The design doc becomes the AUTHORITATIVE CONTRACT for the new implementation.
 ```
 
-### 2c. Field Mapping Contract Chapter (v9.4 — IF has_frontend AND backend API involved)
+### 2c. Field Mapping Contract Chapter (v9.6 — IF has_frontend AND backend API involved)
 
 ```
 ⛔ IF the feature involves data flowing from backend API to frontend
    (REST endpoint, WebSocket message, SSE event, GraphQL response that the UI consumes):
 
-  1. Read the research brief's "API Field Naming Convention" block
-     → Extract: backend_output_style, frontend_consumption_style, conversion_boundary
-  2. Add a "Field Mapping Contract" chapter to the design document with:
-     a. CONVENTION RULE: state the project's canonical convention explicitly
-        e.g., "Backend outputs snake_case; frontend reads camelCase; conversion at frontend
-              via humps.camelizeKeys in api/client.ts"
-     b. NEW ENDPOINT'S SCHEMA: list every field of every new endpoint/event with:
-        | Backend field (wire) | Frontend field (consumed) | Type | Example value | Notes |
-        |----------------------|---------------------------|------|---------------|-------|
-        | user_name            | userName                  | str  | "alice"       |       |
-        | created_at           | createdAt                 | ISO  | "2026-..."    | UTC   |
-     c. CONVERSION POINT: identify WHO does the snake↔camel conversion
-        → Backend serializer (Pydantic alias)? Frontend transformer? Neither (mismatch risk)?
-     d. EXCEPTIONS: any field that intentionally violates the convention — must list reason
-  3. EXPLICIT CONSISTENCY DIFF against existing project endpoints:
-     → "新接口字段命名 = 项目既有约定" (consistent) — most cases
-     → "有意偏离: {reason}" — rare, requires user approval
+  v9.6 SCOPE CHANGE: this chapter is now a LIGHTWEIGHT DECLARATION, NOT an exhaustive
+  per-field table. The detailed per-field grep evidence table is produced by the
+  IMPLEMENTER (Phase 4A §1e) once the actual code exists. Why: pre-spec'ing every
+  field name at design time over-specifies decisions that depend on implementation
+  details (joined data shape, derived fields, frontend transformer presence) and
+  becomes stale the moment the implementer makes a localized renaming. The article
+  on harness design calls this "spec over-specification cascade" — design specs that
+  encode too many concrete details produce more drift than they prevent.
 
-⛔ IF research brief flagged "violations_found" (project already inconsistent):
-   → Choose ONE convention and document it as the chosen baseline
-   → Note the legacy inconsistency as technical debt, NOT to be propagated
+  WHAT TO PRODUCE (≤ 12 lines total — be concise):
 
-Rationale: "字段名映射是跨层契约，必须在设计阶段固定"
-  After-the-fact field mapping = guaranteed undefined errors in frontend.
-  Design doc must specify what backend emits AND what frontend reads — explicitly.
+  1. CONVENTION DECLARATION (1-2 lines):
+     "Backend output style: {snake_case | camelCase | mixed}
+      Frontend consumption style: {snake_case | camelCase}
+      → Direction: {snake→camel | camel→snake | passthrough}"
+
+  2. CONVERSION BOUNDARY (1-2 lines):
+     "Conversion point: {file:path | 'backend serializer alias' | 'frontend transformer'
+                         | 'NONE — fields kept identical end-to-end'}"
+
+  3. INTENTIONAL EXCEPTIONS (only if any):
+     "Field {X}: kept as {form} both sides because {reason}."
+     If no exceptions, omit this subsection entirely.
+
+  ⛔ DO NOT produce a per-field 4-column table in the design doc. The implementer
+     (Phase 4A §1e) will grep the actual code post-implementation and produce a
+     "Field Mapping Evidence Table" that the Phase 4A.5 micro-loop / Phase 4B
+     reviewer diffs against this declaration.
+
+  ⛔ DO NOT enumerate every endpoint's fields. The convention + boundary together
+     are sufficient to detect any deviation — if the implementer's evidence table
+     shows a field that violates the declaration, that is the BLOCKER finding.
+
+  IF research brief flagged "violations_found" (project already inconsistent):
+    → Choose ONE convention as the chosen baseline (state it in step 1)
+    → Note the legacy inconsistency as technical debt, NOT to be propagated
 ```
+
+Rationale: v9.6 — "design specifies the contract direction; implementation produces
+the evidence." This split prevents two failure modes simultaneously:
+  - Design under-specification → undefined at runtime (the v9.4 failure)
+  - Design over-specification → stale spec that no one updates (the Anthropic warning)
+Designer owns 3 things (direction, boundary, exceptions); implementer + reviewer
+own the per-field verification once the code exists.
 
 ## Output Contract (MANDATORY)
 

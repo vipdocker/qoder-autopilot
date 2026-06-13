@@ -1,4 +1,4 @@
-<!-- version: 9.5.4 -->
+<!-- version: 9.6.0 -->
 # Phase 3: PLAN → Task()
 
 AGENT: `engineering-autopilot-planner.md`
@@ -13,7 +13,10 @@ ASSIGNMENT: feature, design_doc path, frontend_spec path (if applicable), has_fr
 2. VERIFY: report has writing-plans proof ✓, dispatching-parallel-agents proof ✓
 3. Extract: DAG, plan_doc path
 4. skills_invoked += [writing-plans, dispatching-parallel-agents]
-5. Write state: { current_phase: "EXECUTE", dag: {...}, artifacts.plan_doc: "..." }
+5. Write state: { current_phase: "AC_NEGOTIATION", dag: {...}, artifacts.plan_doc: "..." }
+6. ⛔ NEXT PHASE = Phase 3B (AC Negotiation). DO NOT jump to Phase 4 (EXECUTE).
+   v9.6 inserts a mandatory contract-validation step between PLAN and EXECUTE — see
+   `skill/phases/phase-3b-ac-negotiation.md`.
 
 ON FAILURE → enter UNIVERSAL RETRY PROTOCOL (SKILL.md §UNIVERSAL RETRY PROTOCOL).
               Apply RETRY HINT below at STEP D (shrinkage).

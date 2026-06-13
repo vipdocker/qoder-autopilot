@@ -1,5 +1,5 @@
 #!/bin/bash
-# Qoder Autopilot v9.5 — Install Script
+# Qoder Autopilot v9.6 — Install Script
 # Usage: bash install.sh
 
 set -e
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}Qoder Autopilot v9.5 — Installing...${NC}"
+echo -e "${CYAN}Qoder Autopilot v9.6 — Installing...${NC}"
 echo ""
 
 # ─── Pre-flight checks ───
@@ -31,8 +31,8 @@ if [ "$AGENT_COUNT" -ne 7 ]; then
 fi
 
 PHASE_COUNT=$(ls "$SKILL_SRC"/phases/phase-*.md 2>/dev/null | wc -l | tr -d ' ')
-if [ "$PHASE_COUNT" -ne 8 ]; then
-  echo -e "${RED}Error: Expected 8 phase files, found $PHASE_COUNT.${NC}"
+if [ "$PHASE_COUNT" -ne 9 ]; then
+  echo -e "${RED}Error: Expected 9 phase files (v9.6: includes phase-3b-ac-negotiation.md), found $PHASE_COUNT.${NC}"
   exit 1
 fi
 
@@ -85,10 +85,10 @@ done
 INSTALLED_PHASES=$(ls "$SKILL_DIR"/phases/phase-*.md 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_SKILL=$((ROOT_COUNT + INSTALLED_PHASES))
 
-if [ "$TOTAL_SKILL" -eq 11 ]; then
-  echo -e "  Skill files: ${GREEN}$TOTAL_SKILL/11${NC} ($ROOT_COUNT root + $INSTALLED_PHASES phases)"
+if [ "$TOTAL_SKILL" -eq 12 ]; then
+  echo -e "  Skill files: ${GREEN}$TOTAL_SKILL/12${NC} ($ROOT_COUNT root + $INSTALLED_PHASES phases)"
 else
-  echo -e "  Skill files: ${RED}$TOTAL_SKILL/11${NC}"
+  echo -e "  Skill files: ${RED}$TOTAL_SKILL/12${NC}"
   ERRORS=$((ERRORS + 1))
 fi
 echo ""
@@ -133,24 +133,27 @@ echo ""
 if [ "$ERRORS" -eq 0 ]; then
   echo -e "${GREEN}Installation complete.${NC}"
   echo ""
-  echo "  Skill (primary):  ~/.agents/skills/qoder-autopilot/     (11 files)"
+  echo "  Skill (primary):  ~/.agents/skills/qoder-autopilot/     (12 files)"
   echo "  Skill (symlink):  ~/.qoderwork/skills/qoder-autopilot → primary"
   echo "  Agents:           ~/.qoder/agents/                      (7 files)"
   echo "  Agents (mirror):  ~/.qoderwork/agents/                  (7 files)"
   echo ""
   echo "Trigger: qoder-autopilot / 自动开发 / 全自动 / autopilot / 端到端开发"
   echo ""
-  echo -e "${CYAN}v9.5 changes from v9.4:${NC}"
-  echo "  - /cso: Security audit (OWASP+STRIDE) in reviewer Phase 4B — security_audit quality gate, CRITICAL = BLOCKING"
-  echo "  - /benchmark: Performance baseline (Core Web Vitals) in finisher Phase 5A — perf_baseline field, IF frontend"
-  echo "  - /investigate: Systematic debugging (Iron Law, 3-cycle) in implementer Phase 4A — on self-verify FAIL"
-  echo "  - /health: Code quality score (5 dimensions + trend) in Phase 7 EVOLVE main session"
-  echo "  - Mandatory skills: 8 → 12 (+ cso, benchmark, investigate, health from gstack)"
-  echo "  - FAILURE MODES: 14 → 16 (+ 安全漏洞漏审, + 性能退化静默交付)"
-  echo "  - Global Rules: 14 → 18"
-  echo "  - Phase 6 audit checklist: 8 rows → 12 rows"
-  echo "  - Batch Gate: + security_audit PASS"
-  echo "  - Finish Gate: + perf_baseline PASS (if frontend)"
+  echo -e "${CYAN}v9.6 changes from v9.5 (Anthropic harness-design alignment):${NC}"
+  echo "  - Phase 3B AC negotiation: reviewer fast-mode evaluates every AC (CLEAR/AMBIGUOUS/UNCOVERED/CONTRADICTORY); planner §2e single corrective replan"
+  echo "  - Phase 4A.5 task-level micro-loop: conditional on T_contract_* or touches_field_mapping_boundary; reviewer THIN MODE; max 2 refine cycles"
+  echo "  - Field Mapping split: designer §2c ≤12-line direction declaration → implementer §1e grep-anchored Evidence Table → reviewer diff (generation/evaluation separation)"
+  echo "  - Per-Skill Sub-Artifact protocol: reviewer writes evidence to review_artifact_dir/batch-N-*.md; main report stays compact"
+  echo "  - Calibration Anchors: every 0-10 self-rating dimension carries 2/5/8 examples; score 10 reserved (anti-leniency drift)"
+  echo "  - Layer ROI table (14 layers × 3-run rolling window) + Ablation Run protocol (only admissible evidence for layer removal)"
+  echo "  - Harness Assumption Snapshot in retro (model/env drift detection)"
+  echo "  - Phase 6 Checklist E (9 rows: AC review / corrective replan / DAG tagging / micro-loop coverage / Evidence Tables / sub-artifacts / ROI / snapshot / ablation)"
+  echo "  - Implementer §1g Corrective-Findings Loop Handler (re-dispatch from micro-loop)"
+  echo "  - Mandatory skills: 12 → 13 (frontend-design now an explicit row; rest unchanged)"
+  echo "  - FAILURE MODES: 16 → 21 (+18 AC ambiguity, +19 cross-layer batch cascade, +20 design over-spec cascade, +21 no data for layer removal)"
+  echo "  - Global Rules: 18 → 22 (+20 calibration anchor citation, +21 sub-artifact discipline, +22 ablation safety)"
+  echo "  - Typical dispatches: 6-9 → 7-11 (3B always; 4A.5 only when triggered)"
 else
   echo -e "${RED}Installation finished with errors. Check output above.${NC}"
   exit 1

@@ -1,4 +1,4 @@
-<!-- version: 9.5.3 -->
+<!-- version: 9.6.0 -->
 # Phase 6: DONE — Completion Report + Mandatory Self-Audit
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -101,6 +101,32 @@ Count: `{called}` / `{required}` mandatory skills called.
 | 5 | Evolution proposals    | EVOLVE  | PENDING       | (next) |
 ```
 
+### Checklist E: v9.6 Evidence (NEW)
+
+Verify each v9.6 layer ran or was correctly skipped, with concrete state-file evidence.
+
+```
+| # | v9.6 Layer                              | Required           | Recorded? | Evidence                                        |
+|---|------------------------------------------|--------------------|-----------|-------------------------------------------------|
+| 1 | Phase 3B AC Negotiation                  | ALWAYS             | YES/NO    | state.ac_negotiation_result = "{PASS/REVISED}" |
+| 2 | Phase 3B corrective pass (if REVISED)    | IF REVISED         | YES/N/A   | planner.corrective_pass_applied + findings_addressed |
+| 3 | DAG per-task touches_field_mapping_boundary tagging | ALWAYS  | YES/NO    | state.dag_tagging_summary.cross_layer_tasks = {n} |
+| 4 | Phase 4A.5 Micro-Loop ran on EVERY tagged task | IF n>0       | YES/NO    | for each tagged T_id: state.dag[T_id].micro_loop.triggered == true |
+| 5 | Implementer §1e Field Mapping Evidence Table | IF tagged tasks present | YES/NO | each tagged task's report has field_mapping_evidence_table |
+| 6 | Per-skill sub-artifact files written      | IF batch_full ran  | YES/NO    | review_artifact_dir contains batch-N-*.md files for each skill |
+| 7 | Layer ROI telemetry populated             | ALWAYS             | YES/NO    | state.layer_roi has entries for all 14 canonical layer IDs |
+| 8 | Harness Assumption Snapshot recorded      | ALWAYS             | YES/NO    | state.harness_assumption populated (model, reasoning_mode, …) |
+| 9 | Ablation run executed (if scheduled)     | IF state.ablation_run.disabled_layer | YES/N/A | state.ablation_run.result = "SUCCESS|REVERTED" |
+```
+
+Source for each row:
+- Read `state.json` for the recorded fields
+- Read the on-disk review_artifact_dir for sub-artifacts
+- Cross-check by sampling: pick 1 tagged task, verify its micro-loop dispatch
+  shows up in state and its implementer report has the evidence table.
+
+⛔ ANY row in Checklist E that is required and NO → STOP, run remediation loop below.
+
 ### Self-Reflection (answer honestly)
 
 ```
@@ -135,6 +161,7 @@ TRANSITION: DONE → EVOLVE
     ✅ Checklist B: {saved}/{total} — ALL PASS
     ✅ Checklist C: {passed}/{total} gates — ALL PASS
     ✅ Checklist D: {confirmed}/{total} — ALL PASS
+    ✅ Checklist E (v9.6): {recorded}/{required} — ALL PASS
     ✅ Self-Reflection: ZERO issues (or all remediated)
     ✅ Remediation cycles: {0/1/2}
 ```
