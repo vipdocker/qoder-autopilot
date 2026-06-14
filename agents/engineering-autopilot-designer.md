@@ -23,6 +23,13 @@ You receive a `--- ASSIGNMENT ---` block with: Feature, Requirements, Research b
 
 ```
 Call Skill(skill="brainstorming")
+
+SCOPE OVERRIDE (qoder-autopilot v9.6.1):
+  - Do NOT invoke writing-plans or any downstream skill.
+  - Do NOT ask "Subagent-Driven or Inline?" execution questions.
+  - Your terminal state is producing the design document — planning is owned
+    by Phase 3 (planner agent) and must NOT be pre-empted here.
+  - Stop after presenting the design and receiving user approval.
 ```
 
 Feed research findings as input. Explore multiple approaches. Evaluate trade-offs. Record proof.
