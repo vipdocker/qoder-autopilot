@@ -455,13 +455,13 @@ For quality gates, resource limits, error classification, and convergence safegu
 ```
 Agent File                                          Model        Rationale
 ─────────────────────────────────────────────────── ──────────── ────────────────────────────
-engineering-autopilot-researcher.md                 Kimi-K2.5    Search + synthesis
+engineering-autopilot-researcher.md                 default      Search + synthesis
 engineering-autopilot-designer.md                   Premium      Creative design decisions
 engineering-autopilot-frontend-designer.md          Premium      UI/UX design (IF has_frontend)
 engineering-autopilot-planner.md                    Premium      DAG construction, dep analysis
 engineering-autopilot-implementer.md                Premium      Code generation + self-verify + /investigate
 engineering-autopilot-reviewer.md                   Premium      Code review, AST + security (/cso)
-engineering-autopilot-finisher.md                   Kimi-K2.6    Branch prep + /benchmark + final checks
+engineering-autopilot-finisher.md                   default      Branch prep + /benchmark + final checks
 
 All files in: ~/.qoder/agents/
 Mirrored in: ~/.qoderwork/agents/
