@@ -76,7 +76,7 @@ Rationale: "隐式契约必须升格为显式契约"
   on harness design calls this "spec over-specification cascade" — design specs that
   encode too many concrete details produce more drift than they prevent.
 
-  WHAT TO PRODUCE (≤ 12 lines total — be concise):
+  WHAT TO PRODUCE (≤ 16 lines total — be concise but concrete):
 
   1. CONVENTION DECLARATION (1-2 lines):
      "Backend output style: {snake_case | camelCase | mixed}
@@ -87,9 +87,21 @@ Rationale: "隐式契约必须升格为显式契约"
      "Conversion point: {file:path | 'backend serializer alias' | 'frontend transformer'
                          | 'NONE — fields kept identical end-to-end'}"
 
-  3. INTENTIONAL EXCEPTIONS (only if any):
+  3. REPRESENTATIVE ENDPOINTS (≤ 3 lines):
+     List the 1-3 endpoints involved in this feature and, for each, ONE representative
+     field pair showing the convention in action:
+       - GET /api/users → backend emits "user_name", frontend reads "userName"
+       - WS /events     → backend emits "created_at", frontend reads "createdAt"
+     This gives implementer/reviewer concrete anchor points without pre-specifying
+     every field.
+
+  4. INTENTIONAL EXCEPTIONS (only if any):
      "Field {X}: kept as {form} both sides because {reason}."
      If no exceptions, omit this subsection entirely.
+
+  ⛔ STILL NO per-field exhaustive table in design doc — that lives in implementer's
+     evidence table. But the contract MUST name at least one real endpoint + field pair
+     so the convention is testable, not just a sentence.
 
   ⛔ DO NOT produce a per-field 4-column table in the design doc. The implementer
      (Phase 4A §1e) will grep the actual code post-implementation and produce a

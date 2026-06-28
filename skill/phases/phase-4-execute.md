@@ -42,7 +42,20 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
     5. VERIFY (v9.6): IF touches_field_mapping_boundary=true → report MUST contain
        field_mapping_evidence_table (grep-anchored). Missing → re-dispatch ONCE with
        explicit instruction to produce it.
-    6. Update state: dag[id].status, dag[id].proofs, change_registry[id],
+    6. VERIFY (FIELD MAPPING CORRECTNESS — FAILURE 14/22 guard):
+       IF report contains field_mapping_evidence_table:
+         • EVERY row MUST have contract_match="YES" (or matches_contract=true)
+         • field_mapping_all_match MUST be true
+         • mismatch_count MUST be 0
+       IF any mismatch found:
+         → DO NOT mark task done. Classify as CODE failure.
+         → Re-dispatch implementer ONCE with corrective instruction:
+           "Field Mapping Contract violation detected in your evidence table:
+            {list mismatched rows}. Fix the implementation so every cross-boundary
+            field honors the design doc contract, then re-run §1e and report
+            field_mapping_all_match=true with zero mismatches."
+         → If still mismatch after corrective retry → mark BLOCKED and surface to user.
+    7. Update state: dag[id].status, dag[id].proofs, change_registry[id],
        dag[id].touches_field_mapping_boundary
        → IF frontend_aesthetics == APPLIED: skills_invoked += [frontend-design]
 
@@ -76,9 +89,13 @@ LIMIT: max 2 refine cycles per task. Counts against `state.dag[id].micro_loop_at
            project_path
          }
          THIN MODE skill scope: ONLY runs (a) Spec-compliance for this task's AC,
-         (b) Field Mapping Contract diff (research_brief naming convention vs implemented
-         field names), (c) Sibling signature consistency for the new symbol.
+         (b) Field Mapping Contract diff (research_brief naming convention + design doc
+         contract vs implementer's field_mapping_evidence_table; produce field_mapping_diff
+         JSON with mismatched fields, severity, and concrete fix), (c) Sibling signature
+         consistency for the new symbol.
          SKIPS: full ast scan, security audit, deployment-chain audit (those run in 4B).
+         ⛔ If micro-loop finds ANY field_mapping_diff.mismatched > 0 → verdict MUST be
+           REFINE_REQUIRED (or FAIL if unfixable). Do NOT let mismatched field names pass.
       2. CHECK micro_loop_verdict: PASS / REFINE_REQUIRED / FAIL
          → PASS: break loop, record state.dag[id].micro_loop_result = "PASS@cycle{n}"
          → REFINE_REQUIRED: re-dispatch implementer for THIS task ONLY with the

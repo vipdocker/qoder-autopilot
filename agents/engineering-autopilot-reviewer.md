@@ -226,8 +226,33 @@ IF yes:
      | "createdAt"          | NO conversion (passthrough)| "createdAt"        |
   5. Compare reality table vs Field Mapping Contract from design doc
 
+  6. PRODUCE MACHINE-READABLE FIELD MAPPING DIFF (for orchestrator & micro-loop):
+     For every cross-boundary field, emit a structured finding with these exact keys:
+       {
+         "endpoint": "GET /api/users",
+         "backend_field": "user_name",
+         "frontend_field": "userName",
+         "declared_conversion": "camelize",
+         "actual_conversion": "camelize",
+         "contract_match": "YES",
+         "severity": "OK"
+       }
+     If contract_match=NO, set severity according to the matrix below and include
+     "expected_frontend_field": "..." + "actual_frontend_field": "..." + "fix": "...".
+     Aggregate into:
+       field_mapping_diff = {
+         "total_fields": N,
+         "matched": N,
+         "mismatched": N,
+         "findings": [ {...}, {...} ]
+       }
+
 ⛔ IF design doc has NO Field Mapping Contract chapter but has_frontend AND API endpoint exists:
    → Spec-Compliance Gate FAIL (HIGH): "Missing Field Mapping Contract — required for FE+BE batches"
+
+⛔ IF implementer provided a field_mapping_evidence_table with any contract_match=NO row:
+   → The implementer should NOT have reported DONE. Flag as BLOCKER and force corrective
+     re-implementation before the batch review can pass. This is the earliest catch layer.
 
 Cross-Layer Field Mapping Severity Matrix:
   ┌──────────────────────────────────────────────────────────┬──────────┐
@@ -254,6 +279,10 @@ Decision rule: 字段映射类问题 = 跨层契约。一个 undefined 就是用
   → Mismatches with no conversion = ALWAYS BLOCKER.
 
 Record result as: field_mapping_consistency: PASS / FAIL (BLOCKER/HIGH/MEDIUM/LOW) / N/A
+
+Output contract addition:
+  field_mapping_diff: { total_fields, matched, mismatched, findings[] }
+  field_mapping_consistency: "PASS" | "FAIL({severity})" | "N/A"
 
 ⛔ If NO backend↔frontend data flow in batch → record: "Field Mapping Check: N/A"
 ```
@@ -381,7 +410,13 @@ Remaining Issues (if any):
     "spec_compliance": "PASS",
     "contract_consistency": "PASS",
     "ui_naming_consistency": "PASS",
-    "field_mapping_consistency": "PASS"
+    "field_mapping_consistency": "PASS",
+    "field_mapping_diff": {
+      "total_fields": 0,
+      "matched": 0,
+      "mismatched": 0,
+      "findings": []
+    }
   },
   "quality_stage": {
     "gate": "PASS",
@@ -497,9 +532,14 @@ Steps:
       → Any MISSING/DIVERGED on this task's AC → micro_loop_verdict = REFINE_REQUIRED
   M.2 Field Mapping Contract Diff:
       → Read research_brief §"API Field Naming Convention" block
+      → Read design_doc "Field Mapping Contract" chapter (convention + boundary + endpoints)
+      → Read implementer's field_mapping_evidence_table (if present)
       → For each new field added by this task (backend serializer or frontend reader):
         - Verify field name follows project's convention OR explicit conversion exists
-      → Mismatch → micro_loop_verdict = REFINE_REQUIRED (severity = HIGH per reference.md)
+        - Compare implementer's evidence row vs design doc declared conversion
+      → Build `field_mapping_diff` JSON: total_fields, matched, mismatched, findings[]
+      → mismatched > 0 → micro_loop_verdict = REFINE_REQUIRED (severity = HIGH/BLOCKER per
+        reference.md Cross-Layer Severity Matrix). Include concrete fix per finding.
   M.3 Sibling Signature Consistency:
       → If task adds a new symbol in a "同族" location (DAO, Service, route handler, etc.)
       → Read 1 existing sibling's public interface
@@ -521,6 +561,14 @@ Spec Compliance:
   | .. | ..      | ..    |
 
 Field Mapping: {PASS / FAIL — fields: [...]}
+Field Mapping Diff:
+  total_fields: N
+  matched: N
+  mismatched: N
+  findings: [
+    { endpoint, backend_field, frontend_field, declared_conversion, actual_conversion,
+      contract_match, severity, expected_frontend_field, actual_frontend_field, fix }
+  ]
 Sibling Signature: {PASS / FAIL / N/A — sibling: {path}}
 
 Corrective Findings (if REFINE_REQUIRED):
@@ -534,6 +582,12 @@ Corrective Findings (if REFINE_REQUIRED):
   "micro_loop_verdict": "PASS | REFINE_REQUIRED | FAIL",
   "spec_compliance": "PASS | FAIL",
   "field_mapping": "PASS | FAIL | N/A",
+  "field_mapping_diff": {
+    "total_fields": 0,
+    "matched": 0,
+    "mismatched": 0,
+    "findings": []
+  },
   "sibling_signature": "PASS | FAIL | N/A",
   "corrective_findings": [ {...}, {...} ]
 }

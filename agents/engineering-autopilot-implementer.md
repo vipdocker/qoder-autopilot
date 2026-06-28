@@ -109,7 +109,8 @@ your implementation honors the declared contract.
 Steps:
   1. Read the design doc's "Field Mapping Contract" chapter
      → Extract: convention direction, conversion boundary, intentional exceptions
-  2. After writing your code, grep your changes to discover every cross-boundary field:
+  2. After writing your code, grep your changes to discover EVERY cross-boundary field
+     (not just one sample — every field emitted by backend AND consumed by frontend):
      a. Backend wire side — grep your serializer / response builder for emitted keys
         (Pydantic Field/alias, dict literal keys, json.dumps inputs, schema definitions)
         Example: `rg -n '"(\w+)"' new_file.py | rg ':\s*$'`
@@ -118,22 +119,30 @@ Steps:
         Example: `rg -n 'response\.\w+|data\.\w+' new_component.tsx`
      c. Conversion layer — confirm whether the declared boundary actually transforms
         the keys (open the conversion file and verify it's wired in this call path)
-  3. Build the FIELD MAPPING EVIDENCE TABLE in your task report:
+  3. Build the FIELD MAPPING EVIDENCE TABLE in your task report. Each row MUST show
+     the declared contract vs what you actually implemented, with explicit verdict:
 
-     | Backend wire field | grep proof (file:line) | Conversion | Frontend read field | grep proof (file:line) | Matches contract? |
-     |-------------------|------------------------|-----------|--------------------|-----------------------|--------------------|
-     | user_name         | api/users.py:42        | camelize  | userName           | components/User.tsx:18 | YES               |
-     | created_at        | api/users.py:43        | passthrough | created_at        | components/User.tsx:19 | NO — should be createdAt |
+     | Endpoint | Backend wire field | Backend proof | Declared conversion | Frontend read field | Frontend proof | Contract match |
+     |----------|-------------------|---------------|---------------------|--------------------|----------------|----------------|
+     | GET /api/users | user_name         | api/users.py:42 | camelize            | userName           | User.tsx:18    | YES            |
+     | GET /api/users | created_at        | api/users.py:43 | camelize            | created_at         | User.tsx:19    | NO             |
 
      ⛔ EVERY row MUST include a grep proof (file:line). Rows without proof are
         treated as fabricated by the reviewer.
-     ⛔ If "Matches contract?" is NO for ANY row → FIX IT before reporting, do NOT
-        just note it. The 4A.5 micro-loop will flag this and force re-implementation.
-  4. SELF-CHECK: scan your evidence table — any NO rows still present? Go back and fix.
+     ⛔ "Endpoint" column: which API/WebSocket/SSE endpoint this field belongs to.
+     ⛔ "Declared conversion" column: what the design doc Field Mapping Contract says
+        should happen to this field (camelize / passthrough / snake_case / etc.).
+     ⛔ "Contract match" column: YES or NO. NO means the implemented field pair violates
+        the declared contract.
+     ⛔ If ANY row has Contract match=NO → FIX IT before reporting DONE. Do NOT report
+        DONE with mismatched field mapping. The orchestrator will reject it.
+  4. SELF-CHECK: scan your evidence table — any Contract match=NO rows still present?
+     Go back and fix. Also verify you did not miss any cross-boundary field.
   5. Report:
      - `field_mapping_evidence_table` field in JSON output (array of rows)
+     - `field_mapping_all_match` field in JSON output: true ONLY if every row is YES
      - In free-text report, include the table verbatim under "Field Mapping Evidence Table"
-     - field_mapping: APPLIED  with row count
+     - field_mapping: APPLIED  with row count and mismatch count (0 expected)
 
 IF trigger condition NOT met:
   → Skip this section. Report: field_mapping: N/A — no cross-layer data flow
@@ -317,8 +326,9 @@ Verification Results:
   deploy_chain: {CLEAN / issues found: [...]}
   frontend_spec: {FOLLOWED / N/A — no frontend spec}  [applied to: {list}]
   contract_match: {YES / DEVIATION: detail / N/A — not 同族实现}  [peer: {sibling_name}]
-  field_mapping: {APPLIED / N/A — no API data flow}  [rows: {applied row count}]
+  field_mapping: {APPLIED / N/A — no API data flow}  [rows: {count}, mismatches: {count — 0 expected}]
   field_mapping_evidence_table: {table or N/A — v9.6 grep-anchored proof}
+  field_mapping_all_match: {true / false / N/A — true only when every row has contract_match=YES}
   frontend_aesthetics: {APPLIED / N/A — no UI files}  [proof: "{first line}", components: {list}]
   investigate: {NOT_NEEDED / RESOLVED(N cycles) / UNRESOLVED}  [root_cause: {summary}]
   corrective_pass: {APPLIED(N findings) / N/A — first attempt}  [v9.6 micro-loop re-dispatch]
@@ -347,14 +357,16 @@ Key Insight: {one sentence}
   "field_mapping": "APPLIED",
   "field_mapping_evidence_table": [
     {
+      "endpoint": "GET /api/users",
       "backend_field": "user_name",
       "backend_proof": "api/users.py:42",
-      "conversion": "camelize",
+      "declared_conversion": "camelize",
       "frontend_field": "userName",
       "frontend_proof": "components/User.tsx:18",
-      "matches_contract": true
+      "contract_match": "YES"
     }
   ],
+  "field_mapping_all_match": true,
   "frontend_aesthetics": "APPLIED",
   "investigate": "NOT_NEEDED",
   "corrective_pass": "N/A",

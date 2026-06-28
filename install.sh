@@ -154,6 +154,10 @@ if [ "$ERRORS" -eq 0 ]; then
   echo "  - FAILURE MODES: 16 → 22 (+18 AC ambiguity, +19 cross-layer batch cascade, +20 design over-spec cascade, +21 no data for layer removal, +22 empty-shell agent/interface output)"
   echo "  - Global Rules: 18 → 25 (+20 calibration anchor citation, +21 sub-artifact discipline, +22 ablation safety, +23 per-task model tier, +24 intent-injection propagation, +25 data presence gate)"
   echo "  - Typical dispatches: 6-9 → 7-11 (3B always; 4A.5 only when triggered)"
+  echo ""
+  echo -e "${CYAN}v9.6.1 quality-of-ship hardening (included):${NC}"
+  echo "  - Data presence gate: FAILURE 22 — empty-shell agent/interface output is rejected before downstream phases consume it"
+  echo "  - Cross-layer field mapping hardening: designer §2c requires representative endpoint/field pairs; implementer §1e Evidence Table carries endpoint + declared_conversion + contract_match + field_mapping_all_match; Phase 4A orchestrator rejects any mismatched row; reviewer/micro-loop emit structured field_mapping_diff JSON"
 else
   echo -e "${RED}Installation finished with errors. Check output above.${NC}"
   exit 1

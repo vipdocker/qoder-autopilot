@@ -296,6 +296,8 @@ LAYER IDS (canonical):
   phase2a_field_mapping_contract
   phase2b_frontend_design
   phase3b_ac_negotiation
+  phase4a_field_mapping_gate     // v9.6.1: orchestrator parses evidence table & rejects mismatches
+  phase4a5_field_mapping_diff    // v9.6.1: micro-loop structured field mapping diff
   phase4a5_micro_loop
   phase4b_requesting_code_review
   phase4b_ast_analysis
