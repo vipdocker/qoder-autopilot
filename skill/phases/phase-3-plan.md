@@ -11,9 +11,9 @@ ASSIGNMENT: feature, design_doc path, frontend_spec path (if applicable), has_fr
    Assignment: { feature, design_doc_path, frontend_spec_path (if has_frontend, else omit),
                  has_frontend, project_path, research_brief_path }
 2. VERIFY: report has writing-plans proof ✓, dispatching-parallel-agents proof ✓
-3. Extract: DAG, plan_doc path
+3. Extract: DAG, plan_doc path, requirements_traceability (v9.6.1 RTM)
 4. skills_invoked += [writing-plans, dispatching-parallel-agents]
-5. Write state: { current_phase: "AC_NEGOTIATION", dag: {...}, artifacts.plan_doc: "..." }
+5. Write state: { current_phase: "AC_NEGOTIATION", dag: {...}, artifacts.plan_doc: "...", requirements_traceability: {...} }
 6. ⛔ NEXT PHASE = Phase 3B (AC Negotiation). DO NOT jump to Phase 4 (EXECUTE).
    v9.6 inserts a mandatory contract-validation step between PLAN and EXECUTE — see
    `skill/phases/phase-3b-ac-negotiation.md`.
@@ -51,6 +51,7 @@ KEEP IN OUTPUT CONTRACT:
   ✓ --- JSON --- block with status, gate, dag_summary (count of T_*, count of T_contract_*)
   ✓ Skill proofs for writing-plans + dispatching-parallel-agents
   ✓ plan_doc path
+  ✓ requirements_traceability matrix (v9.6.1 — keep concise: req_id, criticality, implementing_tasks only)
 
 Token budget: aim for plan_doc ≤ 200 lines. Skeletal is acceptable.
 ```
