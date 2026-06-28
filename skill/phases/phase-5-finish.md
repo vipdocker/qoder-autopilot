@@ -43,6 +43,8 @@ Has frontend: {has_frontend}
 Change registry: {change_registry from state}
 Research brief: {artifacts.research_brief}  (contains Frontend Design System section)
 Frontend spec: {artifacts.frontend_spec} (if has_frontend)
+Plan requirements traceability: {planner.requirements_traceability}  (v9.6.1 — RTM baseline)
+Implementer coverage claims: {union of all task.covered_requirements}  (v9.6.1)
 --- END ---
 
 ## Your Protocol:
@@ -79,7 +81,44 @@ Frontend spec: {artifacts.frontend_spec} (if has_frontend)
    b. Visually compare: does the new UI LOOK like it belongs in the same app?
    c. Check: consistent spacing, colors, typography, hover effects, transitions
 
-### C. PRODUCE VERIFICATION REPORT
+### C. REQUIREMENTS TRACEABILITY VERIFICATION (v9.6.1 — RTV gate)
+
+```
+⛔ Independent from implementer self-reporting: verify that the ACTUAL CODE covers
+   the planned requirements, not just that implementers CLAIMED coverage.
+
+Inputs:
+  - planner.requirements_traceability.matrix (baseline)
+  - union of implementer covered_requirements (claims)
+  - change_registry (actual files changed)
+
+Steps:
+  1. Build the set of MUST+SHOULD requirements from the RTM baseline.
+  2. For each requirement, examine the code in change_registry:
+     - Find evidence that the requirement is implemented (function, component,
+       endpoint, test, UI element, config, etc.).
+     - Verdict per requirement: IMPLEMENTED / NOT_IMPLEMENTED / PARTIAL
+  3. Compute:
+       total_must_should = count(MUST + SHOULD)
+       implemented       = count(IMPLEMENTED)
+       partial           = count(PARTIAL)  // count as 0.5 for ratio; list explicitly
+       not_implemented   = count(NOT_IMPLEMENTED)
+       coverage_ratio    = (implemented + 0.5*partial) / total_must_should
+  4. Gate logic:
+       • coverage_ratio >= 0.95 AND no MUST requirement is NOT_IMPLEMENTED → RTV PASS
+       • any MUST requirement is NOT_IMPLEMENTED → RTV FAIL (BLOCKING)
+       • coverage_ratio < 0.95 → RTV FAIL (coverage gap)
+  5. Output:
+       requirements_traceability_verdict: PASS / FAIL
+       coverage_ratio: N.NN
+       total_must_should: N
+       implemented: N
+       partial: [{req_id, evidence, what's missing}]
+       not_implemented: [{req_id, description, suggested_fix}]
+       false_claims: [{req_id, claimed_by_task, reason claim is wrong}]  // implementer said covered but code doesn't show it
+```
+
+### D. PRODUCE VERIFICATION REPORT
 
 ```
 ARCHITECTURE & STYLE VERIFICATION REPORT
@@ -102,11 +141,21 @@ Frontend Style Compliance (if has_frontend):
   
   Style Gate: {PASS / FAIL — any NO = FAIL}
 
+Requirements Traceability (v9.6.1):
+  coverage_ratio: {N.NN}
+  total_must_should: {N}
+  implemented: {N}
+  partial: [...]
+  not_implemented: [...]
+  false_claims: [...]
+  RTV Gate: {PASS / FAIL}
+
 Overall: {PASS / FAIL}
 Deviations requiring fix: [{list with file + line + what's wrong + what it should be}]
+Missing requirements requiring implementation: [{req_id + description + suggested task}]
 ```
 
-### D. SIBLING CONTRACT CONSISTENCY CHECK (v9.3 — always run)
+### E. SIBLING CONTRACT CONSISTENCY CHECK (v9.3 — always run)
 
 For each new file/class/function added in this feature, find 1-2 EXISTING SIBLINGS
 (same layer type: service method / route handler / HTML component / JS module).
@@ -127,9 +176,18 @@ Compare the PUBLIC INTERFACE to verify the new code follows established patterns
 
 AFTER RECEIVING REPORT:
   - If PASS → proceed to human gate
-  - If FAIL → surface specific deviations to user in human gate presentation
-    NOTE: do NOT auto-fix. Present findings and let user decide.
-  - Record in state: verification_result: {PASS/FAIL, deviations: [...], consistency_deviations: [...]}
+  - If FAIL due to architecture/style/sibling deviations → surface specific deviations
+    to user in human gate presentation.
+  - If FAIL due to Requirements Traceability (RTV) coverage < 95% or missing MUST:
+    → Trigger AUTO-FIX loop (v9.6.1):
+       1. Re-dispatch planner with corrective_mode="requirements_coverage_gap" and
+          missing_requirements list from RTV.
+       2. Run Phase 4A on the corrective tasks.
+       3. Re-run Phase 4B review on affected batch.
+       4. Re-run Phase 5B RTV.
+       5. Max 2 auto-fix cycles. If still FAIL → surface to user in human gate.
+    → Record state.requirements_traceability.auto_fix_cycles += 1
+  - Record in state: verification_result: {PASS/FAIL, deviations: [...], consistency_deviations: [...], requirements_traceability: {...}}
 ```
 
 ## Phase 5 Completion → HUMAN GATE
@@ -139,9 +197,13 @@ HUMAN GATE: Present to user:
   - Finish Gate: {5A result}
   - Performance Baseline: {5A perf_baseline result — PASS/REGRESSED/FIRST_RUN/N/A}
   - Verification: {5B result — architecture + style compliance}
+  - Requirements Traceability (v9.6.1):
+      coverage_ratio: {N.NN} (must be ≥ 0.95)
+      RTV Gate: {PASS/FAIL}
+      If FAIL: list not_implemented requirements + false_claims + auto_fix_cycles consumed
   - If 5B FAIL: list specific deviations with fix suggestions
   - If perf REGRESSED(HIGH): flag specific regressions
-  - Ask: "Merge strategy? (If verification/perf failed, fix first or accept?)"
+  - Ask: "Merge strategy? (If verification/perf/RTV failed, fix first or accept?)"
 
 Write state: { current_phase: "AUDIT", human_gates.merge_strategy: "..." }
 
