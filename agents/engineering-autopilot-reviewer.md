@@ -210,12 +210,21 @@ IF yes:
      a. Backend: serialized response keys (Pydantic alias / struct tag / JSON.stringify output)
      b. Frontend: field accesses on response data (response.X, item.X, props.X)
      c. Conversion layer: does the declared boundary actually convert these fields?
-  3. Build a 3-column reality table:
+  3. DATA PRESENCE CHECK (FAILURE 22 guard for "no data" UI bugs):
+     a. For each NEW/MODIFIED backend endpoint in the batch: inspect the response shape
+        and confirm it returns at least one data-bearing field (not just `{"status":"ok"}`
+        with no payload when the contract promises data).
+     b. For each frontend consumer of that endpoint: confirm it handles the no-data case
+        explicitly (EMPTY state, ERROR state, or documented fallback) — not just assuming
+        the array/object is always populated.
+     c. If the contract says "returns list of X" but the endpoint can return `[]` or null
+        and the frontend has no EMPTY handling → flag as BLOCKER per severity matrix.
+  4. Build a 3-column reality table:
      | Wire field (actual)  | Conversion point (actual) | Read field (actual) |
      |----------------------|---------------------------|---------------------|
      | "user_name"          | api/client.ts camelizeKeys | "userName"         |
      | "createdAt"          | NO conversion (passthrough)| "createdAt"        |
-  4. Compare reality table vs Field Mapping Contract from design doc
+  5. Compare reality table vs Field Mapping Contract from design doc
 
 ⛔ IF design doc has NO Field Mapping Contract chapter but has_frontend AND API endpoint exists:
    → Spec-Compliance Gate FAIL (HIGH): "Missing Field Mapping Contract — required for FE+BE batches"
@@ -230,6 +239,9 @@ Cross-Layer Field Mapping Severity Matrix:
   │   exists but does NOT cover this endpoint                │          │
   │ Field present in design contract but missing in backend  │ BLOCKER  │
   │   response (frontend will read undefined)                │          │
+  │ Backend endpoint returns empty/no-data payload and       │ BLOCKER  │
+  │   frontend has no EMPTY/ERROR/SUCCESS state handling     │          │
+  │   → "no data" silently renders blank UI                  │          │
   │ Field name in code differs from design contract          │ HIGH     │
   │   (consistency drift — fixable but indicates spec rot)   │          │
   │ Convention mixed in same response (some snake, some      │ MEDIUM   │

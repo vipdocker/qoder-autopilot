@@ -29,11 +29,20 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
     2. CHECK report status: PASS or FAIL
        → If FAIL with clear error: re-dispatch ONCE with error context
        → If FAIL twice: mark task BLOCKED, surface to user
-    3. VERIFY: frontend_aesthetics field present in report (APPLIED if UI files, else N/A)
-    4. VERIFY (v9.6): IF touches_field_mapping_boundary=true → report MUST contain
+    3. VERIFY (DATA PRESENCE — FAILURE 22 guard):
+       When status indicates DONE/DONE_WITH_CONCERNS, the task MUST have produced
+       actual changes:
+         • files_modified + files_added MUST NOT both be empty
+         • lines_changed SHOULD be > 0 (0 lines with empty file list = empty shell)
+       IF empty → DO NOT mark done. Classify as MALFORMED, re-dispatch ONCE with:
+         "Previous attempt returned DONE but change_registry is empty. Either implement
+          the requested change or report BLOCKED with a concrete reason. Empty
+          change_registry with DONE status is not allowed."
+    4. VERIFY: frontend_aesthetics field present in report (APPLIED if UI files, else N/A)
+    5. VERIFY (v9.6): IF touches_field_mapping_boundary=true → report MUST contain
        field_mapping_evidence_table (grep-anchored). Missing → re-dispatch ONCE with
        explicit instruction to produce it.
-    5. Update state: dag[id].status, dag[id].proofs, change_registry[id],
+    6. Update state: dag[id].status, dag[id].proofs, change_registry[id],
        dag[id].touches_field_mapping_boundary
        → IF frontend_aesthetics == APPLIED: skills_invoked += [frontend-design]
 

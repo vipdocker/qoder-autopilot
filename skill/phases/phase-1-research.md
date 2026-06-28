@@ -60,10 +60,21 @@ ASSIGNMENT: feature, requirements, acceptance criteria, has_frontend, project pa
       Field Mapping Contract → undefined errors at runtime (Failure 14)."
 
 2. Extract: research_brief path from RESEARCH BRIEF report
-3. VERIFY: IF same-family files exist → research_brief MUST contain 'Baseline Signature Table'
+3. VERIFY (DATA PRESENCE — FAILURE 22 guard):
+   Read the saved research_brief and confirm it contains actionable findings:
+     • Codebase Findings section has at least 1 concrete, feature-relevant bullet
+       (not just "I looked at the code" or empty headers)
+     • IF has_frontend=true → Frontend Design System has css_methodology + at least
+       1 reference_component with concrete notes
+     • IF same-family files exist → Baseline Signature Table has at least 1 row
+     • IF has_frontend=true AND backend API touched → API Field Naming Convention block
+       has backend_output_style, frontend_consumption_style, conversion_boundary, examples
+   IF any required block is empty-shell → classify as MALFORMED and re-dispatch
+   researcher with explicit instruction to fill that section with concrete evidence.
+4. VERIFY: IF same-family files exist → research_brief MUST contain 'Baseline Signature Table'
    → IF missing: re-dispatch researcher with explicit instruction to add the table
-4. VERIFY: IF has_frontend=true AND backend API touched → research_brief MUST contain
+5. VERIFY: IF has_frontend=true AND backend API touched → research_brief MUST contain
    'API Field Naming Convention' block
    → IF missing: re-dispatch researcher with explicit instruction to add the block
-5. Write state: { current_phase: "DESIGN", artifacts.research_brief: "{path}" }
+6. Write state: { current_phase: "DESIGN", artifacts.research_brief: "{path}" }
 ```

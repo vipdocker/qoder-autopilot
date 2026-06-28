@@ -151,8 +151,8 @@ if [ "$ERRORS" -eq 0 ]; then
   echo "  - Phase 6 Checklist E (9 rows: AC review / corrective replan / DAG tagging / micro-loop coverage / Evidence Tables / sub-artifacts / ROI / snapshot / ablation)"
   echo "  - Implementer §1g Corrective-Findings Loop Handler (re-dispatch from micro-loop)"
   echo "  - Mandatory skills: 12 → 13 (frontend-design now an explicit row; rest unchanged)"
-  echo "  - FAILURE MODES: 16 → 21 (+18 AC ambiguity, +19 cross-layer batch cascade, +20 design over-spec cascade, +21 no data for layer removal)"
-  echo "  - Global Rules: 18 → 22 (+20 calibration anchor citation, +21 sub-artifact discipline, +22 ablation safety)"
+  echo "  - FAILURE MODES: 16 → 22 (+18 AC ambiguity, +19 cross-layer batch cascade, +20 design over-spec cascade, +21 no data for layer removal, +22 empty-shell agent/interface output)"
+  echo "  - Global Rules: 18 → 25 (+20 calibration anchor citation, +21 sub-artifact discipline, +22 ablation safety, +23 per-task model tier, +24 intent-injection propagation, +25 data presence gate)"
   echo "  - Typical dispatches: 6-9 → 7-11 (3B always; 4A.5 only when triggered)"
 else
   echo -e "${RED}Installation finished with errors. Check output above.${NC}"

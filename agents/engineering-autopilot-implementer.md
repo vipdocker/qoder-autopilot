@@ -305,6 +305,11 @@ Change Registry:
   files_added: [{list}]
   lines_changed: +{add}/-{remove}
 
+⛔ DATA PRESENCE RULE: If status is DONE or DONE_WITH_CONCERNS, files_modified + files_added
+   MUST NOT both be empty. An empty change_registry with a DONE status is a MALFORMED report
+   and will trigger a re-dispatch. If you truly could not modify any files, report BLOCKED or
+   NEEDS_CONTEXT with a concrete reason.
+
 Verification Results:
   lint_errors: {N}
   type_errors: {N}
@@ -374,19 +379,21 @@ Key Insight: {one sentence}
 6. Check deployment chain: static assets, API contracts, config schemas
 7. Do NOT run test suites — save time and tokens
 8. UI tasks: invoke /frontend-design for design craft; non-UI tasks: skip it (token discipline)
-9. (v9.6.1) Pick the right status:
-   - DONE = everything passes, no doubts → orchestrator advances clean
-   - DONE_WITH_CONCERNS = work complete + verifies PASS, but you noticed something
-     worth flagging that doesn't block this task (e.g., adjacent code smell, ambient
-     bug, naming inconsistency in unrelated sibling). Populate `concerns:[]`.
-   - NEEDS_CONTEXT = you literally cannot proceed without missing info; name the
-     specific files/specs/decisions you need. Populate `needs_context:[]`.
-   - BLOCKED = you investigated and the task as-specified cannot complete; the plan
-     itself or a non-scope file is the root cause. Populate `blocker:`.
-   ⛔ Do NOT use BLOCKED as a synonym for "I gave up" — it's reserved for cases
-      where more context wouldn't help.
-   ⛔ Do NOT use DONE_WITH_CONCERNS to ship broken code — verifies must PASS.
-10. (v9.6.1) **Injected Skills handling.** If the assignment contains an
+9. DATA PRESENCE: before reporting DONE/DONE_WITH_CONCERNS, verify your change_registry is
+   non-empty (files_modified + files_added > 0). Empty registry + DONE status = automatic retry.
+10. (v9.6.1) Pick the right status:
+    - DONE = everything passes, no doubts → orchestrator advances clean
+    - DONE_WITH_CONCERNS = work complete + verifies PASS, but you noticed something
+      worth flagging that doesn't block this task (e.g., adjacent code smell, ambient
+      bug, naming inconsistency in unrelated sibling). Populate `concerns:[]`.
+    - NEEDS_CONTEXT = you literally cannot proceed without missing info; name the
+      specific files/specs/decisions you need. Populate `needs_context:[]`.
+    - BLOCKED = you investigated and the task as-specified cannot complete; the plan
+      itself or a non-scope file is the root cause. Populate `blocker:`.
+    ⛔ Do NOT use BLOCKED as a synonym for "I gave up" — it's reserved for cases
+       where more context wouldn't help.
+    ⛔ Do NOT use DONE_WITH_CONCERNS to ship broken code — verifies must PASS.
+11. (v9.6.1) **Injected Skills handling.** If the assignment contains an
     `Injected Skills (v9.6.1 intent-recognition):` block, treat those skills as
     candidates in addition to your declared `skills:` list. Call any that match
     the current task; mark each ACTUALLY-called skill in `injection_used:[]` of

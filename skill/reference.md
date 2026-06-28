@@ -292,6 +292,7 @@ WHAT TO RECORD per run, per layer:
 LAYER IDS (canonical):
   phase1_baseline_signature
   phase1_api_field_naming
+  phase1_data_presence          // v9.6.1: research_brief empty-shell detection
   phase2a_field_mapping_contract
   phase2b_frontend_design
   phase3b_ac_negotiation
@@ -300,6 +301,7 @@ LAYER IDS (canonical):
   phase4b_ast_analysis
   phase4b_receiving_code_review
   phase4b_cso
+  phase4b_data_presence         // v9.6.1: change_registry / API payload / EMPTY-state detection
   phase5a_finishing
   phase5b_verification
   phase6_self_audit
