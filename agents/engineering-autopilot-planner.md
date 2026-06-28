@@ -72,7 +72,48 @@ Rationale: 跨实现的一致性必须有一个任务负责。
   T_contract 任务是最后一道防线。
 ```
 
-### 2d. Per-Task Cross-Layer Tagging (v9.6 — for Phase 4A.5 micro-loop)
+### 2d. Requirements Traceability Matrix (v9.6.1 — for Phase 5B coverage gate)
+
+```
+⛔ BEFORE saving the plan, build a REQUIREMENTS TRACEABILITY MATRIX (RTM):
+
+Sources of requirements (read in priority order):
+  1. design_doc "Acceptance Criteria" section (or "AC" list)
+  2. design_doc "Requirements" / "Feature Requirements" section
+  3. frontend_spec "Components" / "Pages/Routes" / "Key Interactions" (if has_frontend)
+  4. research_brief "API Field Naming Convention" (each endpoint = one requirement)
+
+For each requirement, assign:
+  req_id: R_{NNN} (e.g. R_001, R_002)
+  source: "design_doc:AC" | "design_doc:requirements" | "frontend_spec" | "research_brief"
+  description: one-line summary
+  criticality: MUST | SHOULD | NICE  (MUST = blocks ship; SHOULD = expected; NICE = bonus)
+  implementing_tasks: [task_id, ...]  (which DAG tasks address this requirement)
+
+Coverage rule:
+  - Every MUST requirement MUST have ≥1 implementing task.
+  - Every SHOULD requirement SHOULD have ≥1 implementing task.
+  - NICE requirements may be unassigned; note as "deferred".
+
+If any MUST requirement has NO implementing task:
+  → Add a task for it OR mark it as out-of-scope with explicit reason in the plan report.
+
+Record in plan_doc and JSON output:
+  requirements_traceability: {
+    total: N,
+    must: M,
+    should: S,
+    nice: P,
+    covered: K,         // requirements with ≥1 implementing task
+    uncovered: [...],   // req_ids with no task
+    matrix: [ {req_id, source, description, criticality, implementing_tasks}, ... ]
+  }
+
+Rationale: "需求覆盖"不能等到 Phase 5B 才靠回忆检查。Planner 在拆任务时
+  就必须声明每个需求被哪个任务实现；否则 Phase 5B 的可追溯门控没有基线。
+```
+
+### 2e. Per-Task Cross-Layer Tagging (v9.6 — for Phase 4A.5 micro-loop)
 
 ```
 ⛔ For EVERY task in the DAG, set the boolean field `touches_field_mapping_boundary`:
@@ -107,14 +148,18 @@ Rationale: 跨实现的一致性必须有一个任务负责。
   }
 ```
 
-### 2e. Corrective Replan Pass (v9.6 — IF Phase 3B AC Negotiation returns REVISE_REQUIRED)
+### 2f. Corrective Replan Pass (v9.6 — IF Phase 3B AC Negotiation returns REVISE_REQUIRED OR Phase 4A coverage gate fails)
 
 ```
-⛔ TRIGGER: assignment includes `ac_negotiation_findings: [...]` field. This means
+⛔ TRIGGER 1: assignment includes `ac_negotiation_findings: [...]` field. This means
    Phase 3B reviewer (fast-mode) returned REVISE_REQUIRED on your previous plan and
    you are being re-dispatched ONCE to apply the fixes.
 
-Steps:
+⛔ TRIGGER 2 (v9.6.1): assignment includes `corrective_mode: "requirements_coverage_gap"`
+   and `missing_requirements: [...]`. This means Phase 4A finished but the union of
+   implementer covered_requirements did not reach 95% of MUST+SHOULD requirements.
+
+Steps for TRIGGER 1 (AC negotiation):
   1. Read each item in ac_negotiation_findings — each has:
      { ac_id, verdict (AMBIGUOUS/UNCOVERED/CONTRADICTORY), fix (suggested rewrite) }
   2. For each finding:
@@ -126,20 +171,34 @@ Steps:
      c. CONTRADICTORY: pick ONE of the conflicting ACs, mark the other as DEFERRED
         with rationale, and surface the conflict for the user to confirm at the
         next human gate.
-  3. Re-run §2 (DAG build) and §2d (cross-layer tagging) for any newly added tasks.
-  4. Do NOT fundamentally restructure tasks that were already CLEAR — limit changes
-     to those touched by the findings.
-  5. Report:
+
+Steps for TRIGGER 2 (requirements coverage gap):
+  1. Read missing_requirements list — each has:
+     { req_id, criticality (MUST/SHOULD), source, description }
+  2. For each missing requirement:
+     a. Determine the SMALLEST change that covers it: add a new task, extend an
+        existing task's scope, or split an oversized task.
+     b. Prefer EXTENDING an existing task if the requirement naturally belongs to
+        its scope; prefer ADDING a new task if it crosses files or layers.
+     c. Update requirements_traceability.matrix so the req_id now points to the
+        covering task(s).
+  3. Re-run §2 (DAG build), §2d (RTM), and §2e (cross-layer tagging) for any changed tasks.
+  4. Report:
      - corrective_pass_applied: true
      - findings_addressed: count
      - residual_findings: any you escalated to user with reason
 
-⛔ MAX 1 corrective pass. If the orchestrator dispatches a second corrective pass,
-   refuse and report `escalation_required: true` — the AC ambiguity is structural
-   and needs a human, not another planner cycle.
+For BOTH triggers:
+  - Do NOT fundamentally restructure tasks that were already CLEAR — limit changes
+    to those touched by the findings.
+  - Re-run §2e (cross-layer tagging) for any newly added tasks.
+
+⛔ MAX 1 corrective pass per trigger. If the orchestrator dispatches a second
+   corrective pass, refuse and report `escalation_required: true` — the issue is
+   structural and needs a human, not another planner cycle.
 ```
 
-### 2f. Per-Task Recommended Model Tagging (v9.6.1 — cost discipline)
+### 2g. Per-Task Recommended Model Tagging (v9.6.1 — cost discipline)
 
 ```
 ⛔ For EVERY task in the DAG, set the string field `recommended_model`:
@@ -261,6 +320,18 @@ DAG Model Summary (v9.6.1):
 
 Deployment-Chain Dependencies: [{list of implicit deps added}] OR "none detected"
 Contract Consistency Tasks: [{T_contract_xxx tasks added}] OR "none — no 同族新实现"
+
+Requirements Traceability (v9.6.1 — for Phase 5B coverage gate):
+  total: {N}
+  must: {M}
+  should: {S}
+  nice: {P}
+  covered: {K}      // requirements with ≥1 implementing task
+  uncovered: [{req_ids with no task}] OR []
+  matrix:
+    - R_001: {source: "design_doc:AC", criticality: "MUST", tasks: [T1, T2], description: "..."}
+    - R_002: {source: "frontend_spec", criticality: "SHOULD", tasks: [T3], description: "..."}
+    ...
 
 Corrective Pass (v9.6 — only present if 3B AC negotiation triggered re-dispatch):
   corrective_pass_applied: {true/false}
