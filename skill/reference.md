@@ -296,8 +296,10 @@ LAYER IDS (canonical):
   phase2a_field_mapping_contract
   phase2b_frontend_design
   phase3b_ac_negotiation
-  phase4a_field_mapping_gate     // v9.6.1: orchestrator parses evidence table & rejects mismatches
-  phase4a5_field_mapping_diff    // v9.6.1: micro-loop structured field mapping diff
+  phase3_requirements_traceability   // v9.6.1: planner RTM baseline
+  phase4a_requirements_coverage      // v9.6.1: orchestrator aggregates covered_requirements
+  phase4a_field_mapping_gate         // v9.6.1: orchestrator parses evidence table & rejects mismatches
+  phase4a5_field_mapping_diff        // v9.6.1: micro-loop structured field mapping diff
   phase4a5_micro_loop
   phase4b_requesting_code_review
   phase4b_ast_analysis
@@ -306,6 +308,7 @@ LAYER IDS (canonical):
   phase4b_data_presence         // v9.6.1: change_registry / API payload / EMPTY-state detection
   phase5a_finishing
   phase5b_verification
+  phase5b_requirements_traceability  // v9.6.1: independent RTV gate
   phase6_self_audit
   phase7_health
 
