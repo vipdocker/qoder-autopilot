@@ -114,9 +114,12 @@ Verify each v9.6 layer ran or was correctly skipped, with concrete state-file ev
 | 4 | Phase 4A.5 Micro-Loop ran on EVERY tagged task | IF n>0       | YES/NO    | for each tagged T_id: state.dag[T_id].micro_loop.triggered == true |
 | 5 | Implementer §1e Field Mapping Evidence Table | IF tagged tasks present | YES/NO | each tagged task's report has field_mapping_evidence_table |
 | 6 | Per-skill sub-artifact files written      | IF batch_full ran  | YES/NO    | review_artifact_dir contains batch-N-*.md files for each skill |
-| 7 | Layer ROI telemetry populated             | ALWAYS             | YES/NO    | state.layer_roi has entries for all 14 canonical layer IDs |
-| 8 | Harness Assumption Snapshot recorded      | ALWAYS             | YES/NO    | state.harness_assumption populated (model, reasoning_mode, …) |
-| 9 | Ablation run executed (if scheduled)     | IF state.ablation_run.disabled_layer | YES/N/A | state.ablation_run.result = "SUCCESS|REVERTED" |
+| 7 | Requirements Traceability Matrix produced | ALWAYS             | YES/NO    | state.requirements_traceability.matrix exists with req_ids |
+| 8 | Requirements Coverage Gate passed         | ALWAYS             | YES/NO    | state.requirements_coverage.gate == "PASS" (ratio ≥ 0.95) |
+| 9 | Phase 5B RTV ran                          | ALWAYS             | YES/NO    | state.verification_result.requirements_traceability.verdict exists |
+| 10 | Layer ROI telemetry populated             | ALWAYS             | YES/NO    | state.layer_roi has entries for all canonical layer IDs |
+| 11 | Harness Assumption Snapshot recorded      | ALWAYS             | YES/NO    | state.harness_assumption populated (model, reasoning_mode, …) |
+| 12 | Ablation run executed (if scheduled)     | IF state.ablation_run.disabled_layer | YES/N/A | state.ablation_run.result = "SUCCESS|REVERTED" |
 ```
 
 Source for each row:
