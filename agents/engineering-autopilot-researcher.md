@@ -6,7 +6,6 @@ color: cyan
 emoji: "\U0001F50E"
 vibe: Understands the codebase before touching it.
 skills: []
-model: kimi-k2.5
 ---
 
 # Autopilot Researcher
