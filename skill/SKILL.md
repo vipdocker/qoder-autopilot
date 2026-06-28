@@ -1,6 +1,6 @@
 ---
 name: qoder-autopilot
-description: "v9.6 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.6: 对齐 Anthropic harness-design — Phase 3B AC 协商 + Phase 4A.5 task-level micro-loop + reviewer 子产物落盘 + Layer ROI 数据采集 + harness 假设可证伪。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'."
+description: "v9.6 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.6: 对齐 Anthropic harness-design — Phase 3B AC 协商 + Phase 4A.5 task-level micro-loop + reviewer 子产物落盘 + Layer ROI 数据采集 + harness 假设可证伪。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
 version: 9.6.1
 ---
 
@@ -112,6 +112,16 @@ FAILURE 22: Agent/接口"返回了但无数据" — 输出格式合法、status=
     (a) UNIVERSAL DISPATCH PROTOCOL 解析 JSON 后校验关键字段非空；
     (b) Phase 1/4 分别校验 research_brief / change_registry 有 actionable 内容；
     (c) Reviewer 跨层字段映射检查增加"Data Presence Check"（后端须返回数据、前端须处理空态）.
+
+FAILURE 23: 实现与需求不一致/遗漏 — 任务跑完、lint/build 通过，但 Phase 5B 发现
+  实际代码未覆盖设计文档中的 MUST/SHOULD 需求（覆盖率 < 95%），或 implementer
+  虚报 covered_requirements。
+  FIX → "需求可追溯"作为独立门控：
+    (a) Planner §2d 产出 requirements_traceability.matrix，为每个需求分配 implementing_tasks；
+    (b) Implementer 在 JSON 中输出 covered_requirements；
+    (c) Phase 4A 编排器聚合覆盖率，< 95% 或 MUST 缺失 → 立即 corrective replan；
+    (d) Phase 5B verifier 独立 RTV（Requirements Traceability Verification），对比代码、
+        声明与实现；差异 > 5% 或 MUST 遗漏 → auto-fix loop（最多 2 轮）→ 仍失败则人工门控。
 ```
 
 ---
@@ -541,11 +551,12 @@ Phase 7: EVOLVE         [main session]    Retro → /health score → Layer ROI 
 18. **Health score in every retro.** Phase 7 orchestrator MUST invoke /health and record the composite score. Trend tracking across runs. DECLINING 2+ runs = HIGH-priority evolution proposal.
 19. **Retry by protocol, not by instinct.** When ANY dispatch fails, traverse the UNIVERSAL RETRY PROTOCOL section — DO NOT decide retry strategy ad-hoc. Classify first (FATAL/TRANSIENT/CODE/MALFORMED), then apply the matching path (BLOCKED / backoff / corrective / shrinkage). Every attempt is recorded in state.dag[id].attempts. NEVER reuse same prompt after CODE/MALFORMED. NEVER reach BLOCKED without exhausting prompt shrinkage first.
 20. **AC verifiability is a gate, not an opinion.** Phase 3B AC NEGOTIATE is MANDATORY between PLAN and EXECUTE. Reviewer (fast mode) reads plan_doc and returns per-AC verifiability (YES/AMBIGUOUS/NO + missing-info). Any AMBIGUOUS/NO → planner corrective pass (max 1) before EXECUTE starts. Skipping Phase 3B = FAILURE 18 reverts to v9.5 batch-level rework cost.
-21. **Micro-loop high-risk tasks at task boundary, not batch boundary.** During Phase 4A, for ANY task with id matching T_contract_* OR task.touches_field_mapping_boundary == true, the implementer MUST dispatch the thin reviewer (spec+contract+field_mapping only, NO cso/ast) immediately after self-verify. Max 2 refine cycles within the task. NEVER advance to next task in batch with an UNVERIFIED contract task. Maps to harness-design generator-evaluator pattern.
+21. **Micro-loop high-risk tasks at task边界, not batch boundary.** During Phase 4A, for ANY task with id matching T_contract_* OR task.touches_field_mapping_boundary == true, the implementer MUST dispatch the thin reviewer (spec+contract+field_mapping only, NO cso/ast) immediately after self-verify. Max 2 refine cycles within the task. NEVER advance to next task in batch with an UNVERIFIED contract task. Maps to harness-design generator-evaluator pattern.
 22. **Layer ROI + harness assumption snapshot in every retro.** Phase 7 retro MUST populate the Layer ROI table (per-layer fire_count, blocker_catch, model_used) AND record one line "本 harness 当前假设模型做不到: {X}". After 3 cumulative runs, the orchestrator surfaces any layer with fire_count > 0 AND blocker_catch == 0 across all 3 runs as an ABLATION CANDIDATE in the evolution proposals. NO retro without these two artifacts.
-23. **Per-task model tier from planner.** (v9.6.1) For each implementer dispatch in Phase 4A, read `dag[task_id].recommended_model` (cheap/standard/premium) from plan_doc and route to the matching model. Missing field → default "standard" (back-compat). Auto-escalate: 2 consecutive failures on the same task → bump one tier (cheap→standard→premium) before next attempt; record `attempts[].model_used` in state.json so retro can compute cost-vs-quality ROI per tier.
+23. **Per-task model tier from planner.** (v9.6.1) For each implementer dispatch in Phase 4A, read `dag[task_id].recommended_model` (cheap/standard/premium) from plan_doc and route to the matching model tier. Missing field → default "standard" (back-compat). Auto-escalate: 2 consecutive failures on the same task → bump one tier (cheap→standard→premium) before next attempt; record `attempts[].model_used` in state.json so retro can compute cost-vs-quality ROI per tier.
 24. **Intent-injection propagation.** (v9.6.1) Phase 0 §6.5 produces `state.injected_skills[<agent>]` (human-confirmed). For EVERY Task() dispatch in Phases 1–5, the orchestrator MUST append an `Injected Skills (v9.6.1 intent-recognition):` block to the assignment, listing each injected skill + `why_match` reason. Agents MUST reciprocate by reporting `injection_used: [<skill_name>, ...]` in their output JSON (empty array if none were called). Phase 7 retro reads these to populate `state.layer_roi.intent_injection`. Missing injected_skills (e.g., legacy state) → fall back silently to agent baseline `skills:` list (back-compat). NEVER inject without the Phase 0 human gate; NEVER inject the same skill into >2 agent roles.
 25. **Data presence is a gate, not an assumption.** (v9.6.1) A valid status/gate/proofs block is NOT enough. Every phase's deliverable MUST be checked for empty-shell returns: research_brief with real findings, change_registry with actual files, reviewer sub-artifacts with real evidence, API payloads with at least one sample field, and frontend EMPTY/ERROR states for no-data scenarios. Empty-but-valid output = MALFORMED → retry protocol.
+26. **Requirements coverage is a gate with a 95% floor.** (v9.6.1) The planner MUST produce a requirements_traceability.matrix; the implementer MUST report `covered_requirements`; the Phase 4A orchestrator MUST aggregate coverage and block advancement if MUST+SHOULD coverage < 95% or any MUST is missing; the Phase 5B verifier MUST independently re-verify RTV against actual code. Coverage gaps are not "deviations for human review" — they trigger an auto-fix loop (max 2 cycles) before the human gate. A requirement claimed but not implemented is a FALSE CLAIM and is treated as BLOCKER severity.
 
 ---
 
