@@ -8,7 +8,6 @@ vibe: One pass to ship-ready. Clean branch, verified release.
 skills:
   - finishing-a-development-branch
   - benchmark
-model: kimi-k2.6
 ---
 
 # Autopilot Finisher
@@ -130,7 +129,7 @@ IF has_frontend = YES:
     │ Render-blocking resource added                     │ MEDIUM   │
     │ Total page weight increase > 200KB                 │ LOW      │
     │ Minor load time increase (< 500ms)                 │ LOW      │
-    └────────────────────────────────────────────────────┴──────────┘
+    └────────────────────────────────────────────────────┴──────────────────────┘
 
   Decision rule: HIGH regression = Finish Gate FAIL (blocking).
     MEDIUM = warning, flag for user in human gate. LOW = note in report.
