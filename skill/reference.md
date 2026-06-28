@@ -75,11 +75,8 @@ Edge cases:
 Premium:    designer, frontend-designer, planner, implementer, reviewer
             → Creative decisions, code generation, code review, security audit
 
-Kimi-K2.5:  researcher
-            → Search + synthesis (lower reasoning requirement)
-
-Kimi-K2.6:  finisher
-            → Branch prep + perf baseline + static checks (procedural, lower reasoning)
+Default:    researcher, finisher
+            → Search + synthesis; branch prep + perf baseline + static checks
 
 Override: if a non-Premium agent fails twice on the same task, escalate to Premium.
 ```
