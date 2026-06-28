@@ -329,6 +329,7 @@ Verification Results:
   field_mapping: {APPLIED / N/A — no API data flow}  [rows: {count}, mismatches: {count — 0 expected}]
   field_mapping_evidence_table: {table or N/A — v9.6 grep-anchored proof}
   field_mapping_all_match: {true / false / N/A — true only when every row has contract_match=YES}
+  covered_requirements: {["R_001", "R_003", ...] / N/A — which requirements from the plan this task implements}
   frontend_aesthetics: {APPLIED / N/A — no UI files}  [proof: "{first line}", components: {list}]
   investigate: {NOT_NEEDED / RESOLVED(N cycles) / UNRESOLVED}  [root_cause: {summary}]
   corrective_pass: {APPLIED(N findings) / N/A — first attempt}  [v9.6 micro-loop re-dispatch]
@@ -367,6 +368,7 @@ Key Insight: {one sentence}
     }
   ],
   "field_mapping_all_match": true,
+  "covered_requirements": ["R_001", "R_003"],
   "frontend_aesthetics": "APPLIED",
   "investigate": "NOT_NEEDED",
   "corrective_pass": "N/A",
@@ -413,3 +415,9 @@ Key Insight: {one sentence}
     injected skill — call only the ones whose `why_match` reason genuinely fits
     this task. The empty array is honest; padding is dishonest and corrupts
     Phase 7 ROI.
+12. (v9.6.1) **Requirements traceability.** Your task assignment includes a plan
+    with requirement IDs (R_001, R_002, ...). When reporting DONE, populate
+    `covered_requirements` with the exact req_ids this task actually implemented.
+    If the task does not address any requirement → `covered_requirements: []` (not
+    N/A). Do NOT claim a requirement you did not implement — Phase 5B will diff
+    your claims against the code and the plan.
