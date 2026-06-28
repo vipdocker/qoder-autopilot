@@ -175,4 +175,24 @@ IF empty → YOU SKIPPED PHASE 4B. Go back and dispatch reviewer NOW.
 CHECK (v9.6): every task with touches_field_mapping_boundary=true OR id matching
   T_contract_* has state.dag[id].micro_loop.triggered == true.
 IF not → YOU SKIPPED 4A.5 ON A QUALIFYING TASK. Go back and run the micro-loop for it.
+
+CHECK (v9.6.1): REQUIREMENTS COVERAGE GATE (pre-Phase 5 early-catch):
+  1. From planner output: requirements_traceability.matrix (list of req_ids)
+  2. From all DONE/DONE_WITH_CONCERNS implementer reports: union of covered_requirements
+  3. Compute:
+       total_reqs      = count(matrix where criticality != NICE)  // MUST + SHOULD
+       covered_reqs    = count(unique req_ids in covered_requirements that exist in matrix)
+       missing_reqs    = total_reqs - covered_reqs
+       coverage_ratio  = covered_reqs / total_reqs
+  4. IF coverage_ratio < 0.95 OR any MUST requirement is in missing_reqs:
+       → DO NOT proceed to Phase 5. This is a CODE/PLAN failure.
+       → Re-dispatch planner ONCE with:
+            corrective_mode: "requirements_coverage_gap"
+            missing_requirements: [ {req_id, criticality, source, description} ]
+            existing_dag: state.dag
+            coverage_ratio: coverage_ratio
+         Planner must produce a MINIMAL corrective plan that adds/extends tasks to cover
+         the missing requirements. Then run Phase 4A on the corrective tasks and re-check.
+       → IF coverage still < 0.95 after corrective pass → mark BLOCKED and surface to user.
+  5. Record state.requirements_coverage = { total, covered, missing, ratio, gate: PASS/FAIL }
 ```
