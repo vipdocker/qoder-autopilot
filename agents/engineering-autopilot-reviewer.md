@@ -24,6 +24,7 @@ The assignment block contains a `mode` field. Branch behavior up-front:
 mode = "batch_full"      → full protocol below (sections 0 → 5, all skills, per-skill sub-artifacts)
 mode = "micro_loop"      → THIN MODE (section M only — skip 1/2/3/5)
 mode = "ac_negotiation"  → FAST MODE (section N only — skip everything else)
+                           (accept legacy alias "ac_negotiation_fast" — same behavior)
 ```
 
 Default if mode field absent = "batch_full" (back-compat).
@@ -579,6 +580,8 @@ Corrective Findings (if REFINE_REQUIRED):
 {
   "mode": "micro_loop",
   "task_id": "{id}",
+  "status": "DONE",
+  "gate": "{PASS if micro_loop_verdict == PASS, else FAIL}",
   "micro_loop_verdict": "PASS | REFINE_REQUIRED | FAIL",
   "spec_compliance": "PASS | FAIL",
   "field_mapping": "PASS | FAIL | N/A",
@@ -595,6 +598,7 @@ Corrective Findings (if REFINE_REQUIRED):
 ```
 
 NO skill proofs in thin mode. NO sub-artifact directory writes. Output stays inline.
+(status/gate are REQUIRED — the orchestrator's retry protocol treats their absence as MALFORMED.)
 
 ## Section N — FAST MODE (AC Negotiation, Phase 3B)
 
@@ -644,6 +648,8 @@ Summary:
 --- JSON ---
 {
   "mode": "ac_negotiation",
+  "status": "DONE",
+  "gate": "{PASS if ac_negotiation_verdict == PASS, else FAIL}",
   "ac_negotiation_verdict": "PASS | REVISE_REQUIRED | FAIL",
   "ac_total": {n},
   "ac_clear": {n},
@@ -659,3 +665,4 @@ Summary:
 
 NO skill proofs, NO sub-artifact writes. FAST MODE is intentionally lightweight —
 its job is to be the cheap "contract negotiation" pass, not a full review.
+(status/gate are REQUIRED — the orchestrator's retry protocol treats their absence as MALFORMED.)

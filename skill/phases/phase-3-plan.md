@@ -1,4 +1,4 @@
-<!-- version: 9.6.0 -->
+<!-- version: 9.6.1 -->
 # Phase 3: PLAN → Task()
 
 AGENT: `engineering-autopilot-planner.md`
@@ -10,6 +10,8 @@ ASSIGNMENT: feature, design_doc path, frontend_spec path (if applicable), has_fr
    Agent file: ~/.qoder/agents/engineering-autopilot-planner.md
    Assignment: { feature, design_doc_path, frontend_spec_path (if has_frontend, else omit),
                  has_frontend, project_path, research_brief_path }
+   Injected Skills (Global Rule 24): append state.injected_skills["planner"] block
+   (skill + why_match per item) to the assignment; omit if empty.
 2. VERIFY: report has writing-plans proof ✓, dispatching-parallel-agents proof ✓
 3. Extract: DAG, plan_doc path, requirements_traceability (v9.6.1 RTM)
 4. skills_invoked += [writing-plans, dispatching-parallel-agents]

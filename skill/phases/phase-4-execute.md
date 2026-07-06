@@ -1,4 +1,4 @@
-<!-- version: 9.6.0 -->
+<!-- version: 9.6.1 -->
 # Phase 4: EXECUTE + REVIEW
 
 **THREE mandatory parts per batch in v9.6: 4A (implement) → 4A.5 (conditional micro-loop) → 4B (batch review).**
@@ -26,9 +26,23 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
        ⚠️ IF has_frontend: frontend_spec_path MUST be included — implementer needs it for UI tasks.
        ⚠️ IF touches_field_mapping_boundary=true: implementer MUST produce
           §1e Field Mapping Evidence Table (grep-produced) in its report.
-    2. CHECK report status: PASS or FAIL
-       → If FAIL with clear error: re-dispatch ONCE with error context
-       → If FAIL twice: mark task BLOCKED, surface to user
+       Injected Skills (Global Rule 24): append state.injected_skills["implementer"] block
+       (skill + why_match per item) to the assignment; omit if empty.
+       ⚠️ MODEL ROUTING (v9.6.1 — Global Rule 23): read dag[task_id].recommended_model
+          (cheap/standard/premium; missing → "standard") and dispatch on the mapped
+          model tier — mapping table in reference.md §Model Tiers. Record
+          state.dag[id].attempts[].model_used. Auto-escalate one tier after 2
+          consecutive failures on the same task.
+    2. CHECK report JSON status (v9.6.1 — 4-state, NOT legacy PASS/FAIL):
+       → DONE: advance.
+       → DONE_WITH_CONCERNS: advance; aggregate report.concerns[] into
+         state.batch_concerns for the 4B reviewer assignment.
+       → NEEDS_CONTEXT: re-dispatch SAME prompt + the context requested in
+         needs_context[] (does NOT consume retry budget; max 2 cycles per task
+         → then treat as BLOCKED).
+       → BLOCKED: CODE-class — investigate & re-dispatch ONCE with more context;
+         still BLOCKED → mark task BLOCKED, surface in batch assessment.
+       → Legacy PASS/FAIL (pre-v9.6.1 report): PASS=DONE; FAIL → UNIVERSAL RETRY PROTOCOL.
     3. VERIFY (DATA PRESENCE — FAILURE 22 guard):
        When status indicates DONE/DONE_WITH_CONCERNS, the task MUST have produced
        actual changes:
@@ -68,7 +82,7 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
 Mirrors Anthropic harness-design generator-evaluator loop *inside* a task boundary, not just
 at batch boundary. Prevents Failure 19 (cross-layer cascade within batch).**
 
-AGENT: `engineering-autopilot-reviewer.md` (THIN MODE — see agent §Thin Mode for Micro-Loop)
+AGENT: `engineering-autopilot-reviewer.md` (THIN MODE — see agent "Section M — THIN MODE (Micro-Loop, Phase 4A.5)")
 TRIGGERS (any of):
   - task.id matches `T_contract_*`
   - task.touches_field_mapping_boundary == true
@@ -129,7 +143,11 @@ ASSIGNMENT: task IDs in batch, change_registry for batch tasks, design doc path,
        Assignment: { mode: "batch_full", task_ids, change_registry_for_batch,
                      design_doc_path, frontend_spec_path (if has_frontend, else omit),
                      project_path, micro_loop_summary (from 4A.5),
+                     concerns_from_implementers (v9.6.1 — aggregated concerns[] of
+                       DONE_WITH_CONCERNS tasks in this batch, else omit),
                      review_artifact_dir }  // v9.6: per-skill sub-artifact dir
+       Injected Skills (Global Rule 24): append state.injected_skills["reviewer"] block
+       (skill + why_match per item) to the assignment; omit if empty.
        ⚠️ design_doc_path MUST be included — reviewer performs spec-compliance check FIRST.
        ⚠️ IF has_frontend: frontend_spec_path MUST also be included — reviewer checks UI compliance.
        ⚠️ v9.6 PER-SKILL SUB-ARTIFACT PROTOCOL: reviewer MUST write each skill's full output

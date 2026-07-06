@@ -62,6 +62,9 @@ Edge cases:
   - Agent produces no output at all → classify as TRANSIENT (likely crash/timeout)
   - Agent produces partial output + error → classify based on error message
   - Agent produces full text but no --- JSON --- block → MALFORMED (use corrective retry, not transient)
+  - Reviewer thin/fast modes (micro_loop / ac_negotiation) have NO proofs_summary BY DESIGN —
+    do NOT classify its absence as MALFORMED. Their required fields are:
+    micro_loop → status/gate/micro_loop_verdict; ac_negotiation → status/gate/ac_negotiation_verdict.
   - 3 consecutive TRANSIENT retries all fail → escalate to PROMPT SHRINKAGE (not BLOCKED yet)
   - 2 consecutive CODE/MALFORMED corrective retries fail → escalate to PROMPT SHRINKAGE
   - SHRINKAGE retry fails → BLOCKED, surface attempts trace
@@ -77,6 +80,17 @@ Premium:    designer, frontend-designer, planner, implementer, reviewer
 
 Default:    researcher, finisher
             → Search + synthesis; branch prep + perf baseline + static checks
+
+Implementer per-task routing (v9.6.1 — from planner `recommended_model` tag, Global Rule 23):
+  cheap    → Default    (mechanical 1-2 file edits, high confidence)
+  standard → Default    (integration / wiring across 3+ files)
+  premium  → Premium    (contract tasks, cross-layer, architecture-defining files)
+  missing tag → "standard" (back-compat)
+  Auto-escalate: 2 consecutive failures on the same task → bump one tier
+  (cheap→standard→premium). Record attempts[].model_used in state.json.
+  Note: cheap/standard both resolve to the platform Default model today; the
+  three-tier tag is kept so the orchestrator can re-split tiers when distinct
+  cheaper models become available, and so retro ROI can compare tag vs outcome.
 
 Override: if a non-Premium agent fails twice on the same task, escalate to Premium.
 ```

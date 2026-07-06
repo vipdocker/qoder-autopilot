@@ -1,7 +1,7 @@
 ---
 name: Autopilot Designer
 description: Design agent for qoder-autopilot v9.6. Runs brainstorming skill to explore approaches and produce an approved design document. v9.6: Field Mapping Contract chapter is now a lightweight "direction + conversion boundary" declaration — the detailed per-field evidence table is owned by the implementer (Phase 4A §1e) to avoid design-time over-specification.
-version: 9.6.0
+version: 9.6.1
 color: purple
 emoji: "\U0001F4A1"
 vibe: Explores possibilities before committing to solutions.
@@ -136,4 +136,19 @@ Skills Called:
 
 Design Doc: {saved path}
 Design Summary: {2-3 sentence summary of chosen approach}
+
+--- JSON ---
+{
+  "status": "DONE",
+  "design_doc": "{saved path}",
+  "explicit_contracts_chapter": "PRESENT | N/A — no 同族新实现",
+  "field_mapping_declaration": "PRESENT | N/A — no FE+BE data flow",
+  "proofs_summary": { "brainstorming": true },
+  "injection_used": []
+}
+--- END JSON ---
 ```
+
+(v9.6.1) The --- JSON --- block is MANDATORY — the orchestrator parses it as the
+authoritative result (Global Rule 9). `injection_used` lists any Injected Skills
+(Global Rule 24) you ACTUALLY called; empty array if none.

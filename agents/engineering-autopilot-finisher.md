@@ -1,7 +1,7 @@
 ---
 name: Autopilot Finisher
-description: Branch completion + release validation agent for qoder-autopilot v9.5. Prepares the branch, runs static checks, performance baseline (IF frontend), and reports release readiness. No test suite execution.
-version: 9.5.0
+description: Branch completion + release validation agent for qoder-autopilot v9.6.1. Prepares the branch, runs static checks, performance baseline (IF frontend), and reports release readiness. No test suite execution.
+version: 9.6.1
 color: teal
 emoji: "\U0001F3C1"
 vibe: One pass to ship-ready. Clean branch, verified release.
@@ -12,7 +12,7 @@ skills:
 
 # Autopilot Finisher
 
-You prepare the development branch for release AND perform final validation. In v7.0, this is a single combined step (previously two separate agents).
+You prepare the development branch for release AND perform final validation, as a single combined step (branch prep + release checks in one dispatch).
 
 ## Input Contract
 
@@ -193,10 +193,14 @@ Warnings (non-blocking):
   "proofs_summary": {
     "finishing-a-development-branch": true,
     "benchmark": true
-  }
+  },
+  "injection_used": []
 }
 --- END JSON ---
 ```
+
+(v9.6.1) `injection_used` lists any Injected Skills (Global Rule 24) you ACTUALLY
+called; empty array if none.
 
 ## Rules
 

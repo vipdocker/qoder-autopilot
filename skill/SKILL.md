@@ -85,8 +85,8 @@ FAILURE 17: dispatch 失败后盲目重试 / 静默放弃 — 无分类与渐进
 
 FAILURE 18: AC 含糊 → 4B 才发现，整批重做 (generator-evaluator 反馈环过晚).
   FIX → NEW Phase 3B: AC NEGOTIATION (fast Task dispatch). Reviewer reads plan_doc,
-    returns ac_verifiability (YES/AMBIGUOUS/NO + missing-info). Planner corrective
-    pass (max 1) before EXECUTE. Eliminates BLOCKER ambiguity at sprint start.
+    returns per-AC verdict (CLEAR/AMBIGUOUS/UNCOVERED/CONTRADICTORY + suggested fix).
+    Planner corrective pass (max 1) before EXECUTE. Eliminates BLOCKER ambiguity at sprint start.
 
 FAILURE 19: 跨层契约任务在 batch 末尾才发现失配 → batch 内多任务连锁返工.
   FIX → NEW Phase 4A.5: TASK-LEVEL MICRO-LOOP (conditional). For T_contract_* OR
@@ -138,7 +138,10 @@ TRIGGERS (any one):
   • Agent produces no output (empty stdout/stderr)
   • Output truncated (no closing JSON block, partial markdown)
   • --- JSON --- block missing or unparseable
-  • JSON parses but required fields absent (status, gate, proofs_summary)
+  • JSON parses but required fields absent — MODE-AWARE required-field sets:
+      default agent dispatch:        status, gate, proofs_summary (when skills required)
+      reviewer mode=micro_loop:      status, gate, micro_loop_verdict (NO proofs_summary by design)
+      reviewer mode=ac_negotiation:  status, gate, ac_negotiation_verdict (NO proofs_summary by design)
   • Agent reports status: "FAIL" with retryable error class
   • Required skill proof missing from Skills Called list
   • (v9.6.1) Implementer reports status: "BLOCKED" (CODE-class — investigate & retry
@@ -401,15 +404,28 @@ Write BEFORE and AFTER every Task(). Read at start of every phase.
   "retro_saved": false,
   "layer_roi_recorded": false,
   "layer_roi": {
-    "ctp_peer_read": { "fire_count": 0, "blocker_catch": 0 },
-    "sibling_scan": { "fire_count": 0, "blocker_catch": 0 },
-    "field_mapping": { "fire_count": 0, "blocker_catch": 0 },
-    "cso_security": { "fire_count": 0, "blocker_catch": 0 },
-    "benchmark_perf": { "fire_count": 0, "blocker_catch": 0 },
-    "investigate": { "fire_count": 0, "blocker_catch": 0 },
-    "micro_loop": { "fire_count": 0, "blocker_catch": 0 },
-    "verifier_5b": { "fire_count": 0, "blocker_catch": 0 },
-    "intent_injection": { "fire_count": 0, "blocker_catch": 0, "helped_phases": [] }
+    "phase1_baseline_signature":      { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase1_api_field_naming":        { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase1_data_presence":           { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase2a_field_mapping_contract": { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase2b_frontend_design":        { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase3b_ac_negotiation":         { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase3_requirements_traceability": { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4a_requirements_coverage":  { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4a_field_mapping_gate":     { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4a5_field_mapping_diff":    { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4a5_micro_loop":            { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4b_requesting_code_review": { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4b_ast_analysis":           { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4b_receiving_code_review":  { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4b_cso":                    { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase4b_data_presence":          { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase5a_finishing":              { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase5b_verification":           { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase5b_requirements_traceability": { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase6_self_audit":              { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "phase7_health":                  { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "intent_injection":               { "fire_count": 0, "blocker_catch": 0, "helped_phases": [] }
   },
   "harness_assumption": "model cannot reliably {X} on its own — verify next release",
   "ablation_run": false,
@@ -437,7 +453,7 @@ At each phase: Read the phase file → execute its protocol → update state →
 | 1: RESEARCH | `phases/phase-1-research.md` | researcher | — | research_brief exists |
 | 2: DESIGN | `phases/phase-2-design.md` | designer + frontend-designer | brainstorming, frontend-design-thinking (IF FE, inline) | Human Gate: design |
 | 3: PLAN | `phases/phase-3-plan.md` | planner | writing-plans, dispatching-parallel-agents | DAG + plan_doc exist |
-| **3B: AC NEGOTIATE** | `phases/phase-3b-ac-negotiation.md` | reviewer (fast mode) | — | ac_negotiation PASS (zero AMBIGUOUS/NO) |
+| **3B: AC NEGOTIATE** | `phases/phase-3b-ac-negotiation.md` | reviewer (fast mode) | — | ac_negotiation PASS (zero AMBIGUOUS/UNCOVERED/CONTRADICTORY) |
 | 4: EXECUTE | `phases/phase-4-execute.md` | implementer ×N + reviewer | investigate (on-fail), frontend-design (IF UI files), cso, requesting-code-review, ast-code-analysis, receiving-code-review | batch_reviews non-empty |
 | ↳ 4A.5 micro-loop | (inline in phase-4) | reviewer (thin mode) | — | spec+contract+field_mapping PASS for T_contract_* / cross-layer tasks |
 | 5: FINISH | `phases/phase-5-finish.md` | finisher + verifier | finishing-a-development-branch, benchmark (IF FE) | Verification + Human Gate |
@@ -550,10 +566,10 @@ Phase 7: EVOLVE         [main session]    Retro → /health score → Layer ROI 
 17. **Structured debugging on failure.** Phase 4A implementer MUST invoke /investigate when self-verify fails. Iron Law: no fix without investigation. Replaces ad-hoc retry.
 18. **Health score in every retro.** Phase 7 orchestrator MUST invoke /health and record the composite score. Trend tracking across runs. DECLINING 2+ runs = HIGH-priority evolution proposal.
 19. **Retry by protocol, not by instinct.** When ANY dispatch fails, traverse the UNIVERSAL RETRY PROTOCOL section — DO NOT decide retry strategy ad-hoc. Classify first (FATAL/TRANSIENT/CODE/MALFORMED), then apply the matching path (BLOCKED / backoff / corrective / shrinkage). Every attempt is recorded in state.dag[id].attempts. NEVER reuse same prompt after CODE/MALFORMED. NEVER reach BLOCKED without exhausting prompt shrinkage first.
-20. **AC verifiability is a gate, not an opinion.** Phase 3B AC NEGOTIATE is MANDATORY between PLAN and EXECUTE. Reviewer (fast mode) reads plan_doc and returns per-AC verifiability (YES/AMBIGUOUS/NO + missing-info). Any AMBIGUOUS/NO → planner corrective pass (max 1) before EXECUTE starts. Skipping Phase 3B = FAILURE 18 reverts to v9.5 batch-level rework cost.
-21. **Micro-loop high-risk tasks at task边界, not batch boundary.** During Phase 4A, for ANY task with id matching T_contract_* OR task.touches_field_mapping_boundary == true, the implementer MUST dispatch the thin reviewer (spec+contract+field_mapping only, NO cso/ast) immediately after self-verify. Max 2 refine cycles within the task. NEVER advance to next task in batch with an UNVERIFIED contract task. Maps to harness-design generator-evaluator pattern.
-22. **Layer ROI + harness assumption snapshot in every retro.** Phase 7 retro MUST populate the Layer ROI table (per-layer fire_count, blocker_catch, model_used) AND record one line "本 harness 当前假设模型做不到: {X}". After 3 cumulative runs, the orchestrator surfaces any layer with fire_count > 0 AND blocker_catch == 0 across all 3 runs as an ABLATION CANDIDATE in the evolution proposals. NO retro without these two artifacts.
-23. **Per-task model tier from planner.** (v9.6.1) For each implementer dispatch in Phase 4A, read `dag[task_id].recommended_model` (cheap/standard/premium) from plan_doc and route to the matching model tier. Missing field → default "standard" (back-compat). Auto-escalate: 2 consecutive failures on the same task → bump one tier (cheap→standard→premium) before next attempt; record `attempts[].model_used` in state.json so retro can compute cost-vs-quality ROI per tier.
+20. **AC verifiability is a gate, not an opinion.** Phase 3B AC NEGOTIATE is MANDATORY between PLAN and EXECUTE. Reviewer (fast mode) reads plan_doc and returns per-AC verdict (CLEAR/AMBIGUOUS/UNCOVERED/CONTRADICTORY + suggested fix). Any non-CLEAR → planner corrective pass (max 1) before EXECUTE starts. Skipping Phase 3B = FAILURE 18 reverts to v9.5 batch-level rework cost.
+21. **Micro-loop high-risk tasks at task boundary, not batch boundary.** During Phase 4A, for ANY task with id matching T_contract_* OR task.touches_field_mapping_boundary == true, the implementer MUST dispatch the thin reviewer (spec+contract+field_mapping only, NO cso/ast) immediately after self-verify. Max 2 refine cycles within the task. NEVER advance to next task in batch with an UNVERIFIED contract task. Maps to harness-design generator-evaluator pattern.
+22. **Layer ROI + harness assumption snapshot in every retro.** Phase 7 retro MUST populate the Layer ROI table (per-layer ran, caught_issue, effort_estimate, model_used) AND record one line "本 harness 当前假设模型做不到: {X}". After 3 cumulative runs, the orchestrator surfaces any layer with ran == true AND caught_issue == false across all 3 runs as an ABLATION CANDIDATE in the evolution proposals. NO retro without these two artifacts.
+23. **Per-task model tier from planner.** (v9.6.1) For each implementer dispatch in Phase 4A, read `dag[task_id].recommended_model` (cheap/standard/premium) from plan_doc and route to the matching model. Missing field → default "standard" (back-compat). Auto-escalate: 2 consecutive failures on the same task → bump one tier (cheap→standard→premium) before next attempt; record `attempts[].model_used` in state.json so retro can compute cost-vs-quality ROI per tier.
 24. **Intent-injection propagation.** (v9.6.1) Phase 0 §6.5 produces `state.injected_skills[<agent>]` (human-confirmed). For EVERY Task() dispatch in Phases 1–5, the orchestrator MUST append an `Injected Skills (v9.6.1 intent-recognition):` block to the assignment, listing each injected skill + `why_match` reason. Agents MUST reciprocate by reporting `injection_used: [<skill_name>, ...]` in their output JSON (empty array if none were called). Phase 7 retro reads these to populate `state.layer_roi.intent_injection`. Missing injected_skills (e.g., legacy state) → fall back silently to agent baseline `skills:` list (back-compat). NEVER inject without the Phase 0 human gate; NEVER inject the same skill into >2 agent roles.
 25. **Data presence is a gate, not an assumption.** (v9.6.1) A valid status/gate/proofs block is NOT enough. Every phase's deliverable MUST be checked for empty-shell returns: research_brief with real findings, change_registry with actual files, reviewer sub-artifacts with real evidence, API payloads with at least one sample field, and frontend EMPTY/ERROR states for no-data scenarios. Empty-but-valid output = MALFORMED → retry protocol.
 26. **Requirements coverage is a gate with a 95% floor.** (v9.6.1) The planner MUST produce a requirements_traceability.matrix; the implementer MUST report `covered_requirements`; the Phase 4A orchestrator MUST aggregate coverage and block advancement if MUST+SHOULD coverage < 95% or any MUST is missing; the Phase 5B verifier MUST independently re-verify RTV against actual code. Coverage gaps are not "deviations for human review" — they trigger an auto-fix loop (max 2 cycles) before the human gate. A requirement claimed but not implemented is a FALSE CLAIM and is treated as BLOCKER severity.

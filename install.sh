@@ -36,6 +36,23 @@ if [ "$PHASE_COUNT" -ne 9 ]; then
   exit 1
 fi
 
+# ─── Cross-file contract validation (v9.6.1) ───
+# Phase files and agent files are a generator/consumer pair. Installing them
+# out of sync reproduces FAILURE 11/14 inside the harness itself.
+if [ -f "$SCRIPT_DIR/validate.sh" ]; then
+  echo -e "${CYAN}[Contract validation]${NC}"
+  if bash "$SCRIPT_DIR/validate.sh" --quiet; then
+    echo -e "  Contracts: ${GREEN}PASS${NC}"
+  else
+    echo -e "${RED}Error: phase↔agent contract validation failed. Run 'bash validate.sh' for details.${NC}"
+    echo -e "${RED}Refusing to install drifted files.${NC}"
+    exit 1
+  fi
+  echo ""
+else
+  echo -e "${YELLOW}Warning: validate.sh not found — skipping contract validation.${NC}"
+fi
+
 ERRORS=0
 
 # ─── Cleanup old locations from previous versions ───

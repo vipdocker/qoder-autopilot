@@ -341,4 +341,32 @@ Corrective Pass (v9.6 — only present if 3B AC negotiation triggered re-dispatc
 Summary: {N} tasks, {depth} levels, {P} parallel groups
 Critical path: [{task_ids}]
 Plan Doc: {saved path}
+
+--- JSON ---
+{
+  "status": "DONE",
+  "plan_doc": "{saved path}",
+  "dag_summary": {
+    "total_tasks": 0,
+    "cross_layer_tasks": 0,
+    "contract_tasks": 0,
+    "depth": 0,
+    "parallel_groups": 0
+  },
+  "dag_model_summary": { "cheap": 0, "standard": 0, "premium": 0 },
+  "deployment_chain_deps": [],
+  "corrective_pass_applied": false,
+  "findings_addressed": 0,
+  "residual_findings": [],
+  "proofs_summary": {
+    "writing-plans": true,
+    "dispatching-parallel-agents": true
+  },
+  "injection_used": []
+}
+--- END JSON ---
 ```
+
+(v9.6.1) The --- JSON --- block is MANDATORY — the orchestrator parses it as the
+authoritative result (Global Rule 9). `injection_used` lists any Injected Skills
+(Global Rule 24) you ACTUALLY called; empty array if none.

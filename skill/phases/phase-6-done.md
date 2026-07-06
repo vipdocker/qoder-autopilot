@@ -1,4 +1,4 @@
-<!-- version: 9.6.0 -->
+<!-- version: 9.6.1 -->
 # Phase 6: DONE — Completion Report + Mandatory Self-Audit
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -9,8 +9,8 @@
 │ 2. Skills required this phase:             (audit)     │
 │ 3. Resuming after compression?             YES → reload│
 │ 4. skills_invoked so far: [{current list}]             │
-│    COUNT: {N} skills called out of 12 tracked          │
-│    ⚠️ If count < 10, something was DEFINITELY skipped  │
+│    COUNT: {N} skills called out of 13 tracked          │
+│    ⚠️ If count < 9, something was DEFINITELY skipped   │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -65,7 +65,7 @@ For each skill, paste the ACTUAL first line of output you received.
 
 Count: `{called}` / `{required}` mandatory skills called.
 
-**If count < 10 (no frontend, no failures) or < 13 (frontend project with UI tasks + failures), there are definitely skipped skills.**
+**If count < 9 (no frontend, no failures) or < 13 (frontend project with UI tasks + failures), there are definitely skipped skills.**
 
 ### Checklist B: Artifacts
 

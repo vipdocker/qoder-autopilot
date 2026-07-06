@@ -1,4 +1,4 @@
-<!-- version: 9.6.0 -->
+<!-- version: 9.6.1 -->
 # Phase 3B: AC NEGOTIATION → Task() (reviewer fast mode)
 
 **NEW in v9.6.** Maps to Anthropic harness-design "Sprint Contract negotiation" pattern.
@@ -18,40 +18,48 @@ Skipping = violation of Global Rule 20.
 
 ## Protocol
 
-AGENT: `engineering-autopilot-reviewer.md` (FAST MODE — see agent §1.5)
+AGENT: `engineering-autopilot-reviewer.md` (FAST MODE — see agent "Section N — FAST MODE (AC Negotiation, Phase 3B)")
 REQUIRED SKILLS: (none — fast pre-flight, no external skill calls)
-ASSIGNMENT: plan_doc path, design_doc path, project path
+ASSIGNMENT: mode, plan_doc path, design_doc path, research_brief path, acceptance_criteria (extracted by orchestrator), project path
 
 ```
 1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
    Agent file: ~/.qoder/agents/engineering-autopilot-reviewer.md
    Assignment: {
-     mode: "ac_negotiation_fast",
+     mode: "ac_negotiation",
      plan_doc_path: "...",
      design_doc_path: "...",
+     research_brief_path: "...",
+     acceptance_criteria: [ ...AC list extracted from plan_doc by orchestrator... ],
      project_path: "..."
    }
+   Injected Skills (Global Rule 24): append state.injected_skills["reviewer"] block
+   (skill + why_match per item) to the assignment; omit if empty.
    Additional instructions in prompt:
      "FAST MODE: skip all code review / cso / ast / browser checks.
-      Your single deliverable is the ac_verifiability table — see your agent's
-      §1.5 AC Negotiation Fast-Mode section for the exact contract.
+      Your single deliverable is the AC negotiation table — see your agent file's
+      'Section N — FAST MODE (AC Negotiation, Phase 3B)' for the exact contract.
       Token budget: aim for <300 lines output."
 
-2. PARSE result. Expected --- JSON --- block:
+2. PARSE result. Expected --- JSON --- block (canonical — matches agent Section N):
    {
-     "status": "PASS|FAIL",
+     "mode": "ac_negotiation",
+     "status": "DONE",
      "gate": "PASS|FAIL",
-     "mode": "ac_negotiation_fast",
-     "ac_table": [
-       { "ac_id": "AC-1", "text": "...", "verifiability": "YES|AMBIGUOUS|NO",
-         "missing_info": "..." }
-     ],
-     "summary": { "total": N, "yes": N, "ambiguous": N, "no": N }
+     "ac_negotiation_verdict": "PASS | REVISE_REQUIRED | FAIL",
+     "ac_total": N, "ac_clear": N, "ac_ambiguous": N,
+     "ac_uncovered": N, "ac_contradictory": N,
+     "findings": [
+       { "ac_id": 2, "verdict": "AMBIGUOUS|UNCOVERED|CONTRADICTORY", "fix": "..." }
+     ]
    }
 
 3. EVALUATE gate:
-   - If summary.ambiguous == 0 AND summary.no == 0 → gate PASS, proceed to STEP 5
-   - Else → gate FAIL, proceed to STEP 4 (planner corrective pass)
+   - ac_negotiation_verdict == "PASS" (zero AMBIGUOUS/UNCOVERED/CONTRADICTORY)
+     → gate PASS, proceed to STEP 5
+   - == "REVISE_REQUIRED" → proceed to STEP 4 (planner corrective pass)
+   - == "FAIL" (ACs structurally unverifiable, not a wording issue)
+     → escalate to HUMAN GATE directly (skip STEP 4)
 
 4. PLANNER CORRECTIVE PASS (max 1):
    Re-dispatch planner with assignment:
@@ -59,13 +67,14 @@ ASSIGNMENT: plan_doc path, design_doc path, project path
        feature, design_doc_path, frontend_spec_path, has_frontend,
        project_path, research_brief_path,
        previous_plan_path: "{plan_doc_path}",
-       ac_negotiation_findings: "{ac_table filtered to AMBIGUOUS+NO rows}",
+       ac_negotiation_findings: "{findings array — AMBIGUOUS/UNCOVERED/CONTRADICTORY rows}",
        corrective_instruction:
-         "Phase 3B AC Negotiation found N AMBIGUOUS/NO ACs.
-          Rewrite ONLY those ACs in the existing plan_doc to be machine-verifiable
-          (concrete measurable conditions, expected outputs, test data shapes).
-          Do NOT restructure the DAG or rewrite verifiable ACs.
-          Re-emit the full plan_doc with corrected ACs."
+         "Phase 3B AC Negotiation found N AMBIGUOUS/UNCOVERED/CONTRADICTORY ACs.
+          Apply your agent file §2e Corrective Replan Pass: rewrite AMBIGUOUS ACs to be
+          machine-verifiable, add/expand tasks for UNCOVERED ACs, resolve CONTRADICTORY
+          pairs (defer one with rationale). Do NOT restructure tasks that were CLEAR.
+          Re-emit the full plan_doc."
+     }
    After re-dispatch:
      a. Verify writing-plans proof again
      b. Re-dispatch reviewer fast-mode ONCE more on the updated plan_doc
@@ -77,16 +86,19 @@ ASSIGNMENT: plan_doc path, design_doc path, project path
 
 5. RECORD:
    - artifacts.ac_negotiation_result = "{path to ac-negotiation.md}"
-   - state.layer_roi.micro_loop.fire_count is NOT incremented (this layer is "ac_negotiation",
-     but for Phase 7 ROI accounting we treat AC negotiation as a 3B-only event;
-     blocker_catch += summary.ambiguous + summary.no at first pass)
+   - state.layer_roi.phase3b_ac_negotiation = {
+       ran: true,
+       caught_issue: (ac_ambiguous + ac_uncovered + ac_contradictory > 0 at FIRST pass),
+       finding_summary: "{1-line top finding, or null if all CLEAR}",
+       effort_estimate: "LOW"
+     }
    - Write state: { current_phase: "EXECUTE", ac_negotiation_result: {...} }
 
 ON FAILURE → enter UNIVERSAL RETRY PROTOCOL (SKILL.md §UNIVERSAL RETRY PROTOCOL).
               Apply RETRY HINT below at STEP D (shrinkage).
 ```
 
-## RETRY HINT (v9.6)
+## RETRY HINT (v9.6.1)
 
 When Phase 3B reviewer dispatch fails at STEP D (PROMPT SHRINKAGE), use this MINIMAL variant:
 
@@ -99,17 +111,18 @@ Produce ONLY the gate-blocking deliverable:
 REQUIRED OUTPUT:
   --- JSON ---
   {
-    "status": "PASS|FAIL",
+    "mode": "ac_negotiation",
+    "status": "DONE",
     "gate": "PASS|FAIL",
-    "mode": "ac_negotiation_fast",
-    "ac_table": [ {ac_id, verifiability, missing_info(<=20 words)} ],
-    "summary": {total, yes, ambiguous, no}
+    "ac_negotiation_verdict": "PASS | REVISE_REQUIRED | FAIL",
+    "ac_total": N, "ac_clear": N, "ac_ambiguous": N, "ac_uncovered": N, "ac_contradictory": N,
+    "findings": [ {ac_id, verdict, fix(<=20 words)} ]
   }
   --- END JSON ---
 
 EXPLICITLY DROP:
-  ❌ Do NOT echo the original AC text into the table — refer by ac_id only.
-  ❌ Do NOT include design_doc commentary or proposed AC rewrites.
+  ❌ Do NOT echo the original AC text into findings — refer by ac_id only.
+  ❌ Do NOT include design_doc commentary or proposed AC rewrites beyond the fix field.
   ❌ Do NOT include reviewer free-form analysis or rationale paragraphs.
 
 KEEP IN OUTPUT CONTRACT:

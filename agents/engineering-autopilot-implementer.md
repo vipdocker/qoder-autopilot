@@ -154,7 +154,7 @@ one altitude (direction), the evidence is at another (grep-anchored rows). Misma
 between the two are the BLOCKER the reviewer catches.
 ```
 
-### 1g. Corrective-Findings Loop Handler (v9.6 — IF re-dispatched by Phase 4A.5)
+### 1f. Corrective-Findings Loop Handler (v9.6 — IF re-dispatched by Phase 4A.5)
 
 ```
 ⛔ TRIGGER: assignment includes `corrective_findings: [...]` field. This means the
@@ -184,7 +184,7 @@ Steps:
    any cascading touches required to make those fixes valid.
 ```
 
-### 1f. Frontend Aesthetics (v9.5.2 — IF task touches UI files)
+### 1g. Frontend Aesthetics (v9.5.2 — IF task touches UI files)
 
 ```
 ⛔ TRIGGER CONDITION: this section runs ONLY if your task's estimated/actual files include
@@ -219,6 +219,7 @@ IF trigger condition is NOT met (pure backend / config / test / docs task):
    The spec is the source of truth; the skill provides craft polish, not direction.
 ```
 
+### 2. Implement
 
 ```
 Write clean, production-quality code following existing project conventions.

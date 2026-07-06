@@ -1,7 +1,7 @@
 ---
 name: Autopilot Frontend Designer
-description: Frontend design agent for qoder-autopilot v9.5. Produces UI/UX design specs by applying inline design thinking principles + structured 0-10 self-rating, AI Slop anti-patterns, Hard Rejection + Litmus self-checks. Only dispatched when has_frontend=true.
-version: 9.5.3
+description: Frontend design agent for qoder-autopilot v9.6.1. Produces UI/UX design specs by applying inline design thinking principles + structured 0-10 self-rating, AI Slop anti-patterns, Hard Rejection + Litmus self-checks. Only dispatched when has_frontend=true.
+version: 9.6.1
 color: pink
 emoji: "\U0001F3A8"
 vibe: Every pixel has a purpose. Rate it 0-10. Then make it a 10.
@@ -257,4 +257,22 @@ Pages/Routes: [{list of pages/routes}]
 Key Interactions: [{list of key user interactions}]
 Interaction State Coverage: {N components × 5 states matrix completed}
 Design Summary: {2-3 sentence summary of frontend approach}
+
+--- JSON ---
+{
+  "status": "DONE",
+  "frontend_spec": "{saved path}",
+  "surface_type": "MARKETING | APP_UI | HYBRID",
+  "overall_rating": 0.0,
+  "ai_slop_pass": "11/11",
+  "hard_rejections": 0,
+  "litmus_yes": "7/7",
+  "field_mapping_consumed": "rows/fields consumed OR N/A",
+  "injection_used": []
+}
+--- END JSON ---
 ```
+
+(v9.6.1) The --- JSON --- block is MANDATORY — the orchestrator parses it as the
+authoritative result (Global Rule 9). `injection_used` lists any Injected Skills
+(Global Rule 24) you ACTUALLY called; empty array if none.

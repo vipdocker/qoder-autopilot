@@ -1,7 +1,7 @@
 ---
 name: Autopilot Researcher
-description: Codebase and web research agent for qoder-autopilot v9.5. Analyzes existing code patterns, UI sibling naming conventions, API field naming conventions, and gathers external best practices.
-version: 9.5.0
+description: Codebase and web research agent for qoder-autopilot v9.6.1. Analyzes existing code patterns, UI sibling naming conventions, API field naming conventions, and gathers external best practices.
+version: 9.6.1
 color: cyan
 emoji: "\U0001F50E"
 vibe: Understands the codebase before touching it.
@@ -174,9 +174,13 @@ Brief saved: {path}
   "has_api_naming_convention": true,
   "css_methodology": "CSS Modules",
   "risk_count": 2,
-  "files_in_scope": []
+  "files_in_scope": [],
+  "injection_used": []
 }
 --- END JSON ---
 ```
+
+(v9.6.1) `injection_used` lists any Injected Skills (Global Rule 24) you ACTUALLY
+called; empty array if none.
 
 Save brief to `docs/superpowers/research/` in the project.

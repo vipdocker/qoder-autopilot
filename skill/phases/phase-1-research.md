@@ -1,4 +1,4 @@
-<!-- version: 9.5.0 -->
+<!-- version: 9.6.1 -->
 # Phase 1: RESEARCH → Task()
 
 AGENT: `engineering-autopilot-researcher.md`
@@ -9,6 +9,8 @@ ASSIGNMENT: feature, requirements, acceptance criteria, has_frontend, project pa
 1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
    Agent file: ~/.qoder/agents/engineering-autopilot-researcher.md
    Assignment: { feature, requirements, acceptance_criteria, has_frontend, project_path }
+   Injected Skills (Global Rule 24): append state.injected_skills["researcher"] block
+   (skill + why_match per item) to the assignment; omit if empty.
    IF has_frontend=true, ADD to assignment:
      "⛔ FRONTEND RESEARCH PRIORITY: This feature has frontend. You MUST investigate the
       project's existing frontend design system — CSS methodology, design tokens, existing
