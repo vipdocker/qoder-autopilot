@@ -126,7 +126,8 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 
 ```
 qoder-autopilot-package/
-├── install.sh                 ← 安装脚本（运行这个）
+├── install.sh                 ← 安装脚本（运行这个；pre-flight 自动调用 validate.sh）
+├── validate.sh                ← 跨文件契约校验（v9.6.1 新增：103 项检查，phase↔agent 接口漂移拦截）
 ├── uninstall.sh               ← 卸载脚本
 ├── README.md                  ← 本文件
 ├── skill/                     ← 技能文件（→ ~/.agents/skills/ + symlink）
@@ -241,11 +242,12 @@ bash install.sh
 ```
 
 脚本会：
-1. 安装 skill 到 `~/.agents/skills/qoder-autopilot/`（12 文件，含 v9.6 新增的 `phase-3b-ac-negotiation.md`）
-2. 创建软链接 `~/.qoderwork/skills/qoder-autopilot` → 主目录
-3. 安装 agents 到 `~/.qoder/agents/` + `~/.qoderwork/agents/`（各 7 文件）
-4. 自动清理旧版遗留（validator agent、~/.qoder/skills/ 旧路径）
-5. 验证文件数量
+1. 运行 `validate.sh` 契约校验（103 项：版本一致性 / mode 契约 / 章节锚点 / JSON 字段契约 / layer_roi ID / 退役词汇封禁 / Rule 24 传播），失败则拒绝安装漂移文件
+2. 安装 skill 到 `~/.agents/skills/qoder-autopilot/`（12 文件，含 v9.6 新增的 `phase-3b-ac-negotiation.md`）
+3. 创建软链接 `~/.qoderwork/skills/qoder-autopilot` → 主目录
+4. 安装 agents 到 `~/.qoder/agents/` + `~/.qoderwork/agents/`（各 7 文件）
+5. 自动清理旧版遗留（validator agent、~/.qoder/skills/ 旧路径）
+6. 验证文件数量
 
 ### 卸载
 
@@ -360,7 +362,7 @@ L4→L6 构成"实现即验证"的闭环：implementer 自证 → orchestrator �
 
 ## 已知故障模式
 
-v9.6 记录了 22 个从实际运行中发现的故障模式，每个都有对应的修复措施。关键项：
+v9.6.1 记录了 23 个从实际运行中发现的故障模式，每个都有对应的修复措施。关键项：
 
 - **FAILURE 11** (v9.1): 同族实现契约失配 — 单测通过但集成崩溃。修复：CTP 6 层防御（横向代码层）。
 - **FAILURE 12** (v9.2): 架构层职责漂移 — 逻辑在错误的层，每次变更波及多层。修复：6 条架构设计原则。
@@ -382,7 +384,8 @@ v9.6 记录了 22 个从实际运行中发现的故障模式，每个都有对�
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
-| v9.6.1 | 2026-06-28 | 新增 FAILURE 22：Agent/接口"返回了但无数据"——把数据存在性提升为独立门控。UNIVERSAL DISPATCH PROTOCOL 解析 JSON 后校验关键字段非空；Phase 1 校验 research_brief 有 actionable 发现；Phase 4 校验 implementer change_registry 非空；Implementer/Reviewer agent 增加 DATA PRESENCE 规则；Reviewer 跨层字段映射检查新增 Data Presence Check（后端须返回数据、前端须处理 EMPTY 状态）。Global Rules 22→25（+23 per-task model tier、+24 intent-injection propagation、+25 data presence gate）。<br><br>强化跨层字段映射一致性：Designer §2c 增加"代表性端点/字段对"要求，Implementer §1e Evidence Table 增加 endpoint + declared_conversion + contract_match 列 + `field_mapping_all_match` 字段，Phase 4A Orchestrator 机验 evidence table（不匹配则立即 corrective retry），micro-loop 与 Reviewer 输出结构化 `field_mapping_diff` JSON。<br><br>新增 FAILURE 23 + Global Rule 26：需求可追溯门控。Planner §2d 产出 requirements_traceability.matrix；Implementer 输出 covered_requirements；Phase 4A 聚合覆盖率并在 <95% 或 MUST 缺失时 corrective replan；Phase 5B verifier 独立 RTV，差异 >5% 触发 auto-fix loop（最多 2 轮）。 |
+| v9.6.1 | 2026-07-06 | **契约漂移审计修复 + validate.sh 自校验（[#4](https://github.com/vipdocker/qoder-autopilot/issues/4)）**。审计发现 v9.6/v9.6.1 升级时 phase 文件（orchestrator 侧）与 agent 文件改动不同步——FAILURE 11/14 发生在 harness 自身。修复：（1）Phase 3B↔Reviewer 契约统一（mode=`ac_negotiation`、死引用 §1.5→Section N、JSON 统一为 ac_negotiation_verdict+findings、assignment 补 research_brief_path/acceptance_criteria）；（2）Phase 2 与 Designer §2c 矛盾消除（逐字段表指令→轻量声明）；（3）MALFORMED 判定 mode 化 + Section M/N 补 status/gate；（4）layer_roi 三套 schema 统一为 canonical ID（后扩展至 21+intent_injection）；（5）Phase 4A 同步 4-state 状态机路由 + 模型档位映射表（cheap/standard→Default、premium→Premium）；（6）designer/frontend-designer/planner 补强制 JSON 块，全部 7 agent 补 injection_used，Phase 1–5 全派发点补 Injected Skills 传播行；（7）全文件版本统一 9.6.1、implementer 章节序修正、Phase 6 技能数 12→13。<br><br>**新增 `validate.sh`（103 项检查）**：版本一致性 / mode 契约 / 章节锚点 / JSON 字段契约 / JSON 块+injection_used 覆盖 / layer_roi ID 双向比对 / agent 引用可解析 / 退役词汇封禁 / Rule 24 传播；接入 install.sh pre-flight，校验失败拒绝安装。首次运行即抓到人工评审遗漏的 planner JSON 块缺失，并在后续 rebase 中拦截到需求追溯特性新增的 7 个 layer ID 未同步 SKILL.md 状态模板的漂移。 |
+| v9.6.1 | 2026-06-28 | 新增 FAILURE 22：Agent/接口“返回了但无数据”——把数据存在性提升为独立门控。UNIVERSAL DISPATCH PROTOCOL 解析 JSON 后校验关键字段非空；Phase 1 校验 research_brief 有 actionable 发现；Phase 4 校验 implementer change_registry 非空；Implementer/Reviewer agent 增加 DATA PRESENCE 规则；Reviewer 跨层字段映射检查新增 Data Presence Check（后端须返回数据、前端须处理 EMPTY 状态）。Global Rules 22→25（+23 per-task model tier、+24 intent-injection propagation、+25 data presence gate）。<br><br>强化跨层字段映射一致性：Designer §2c 增加“代表性端点/字段对”要求，Implementer §1e Evidence Table 增加 endpoint + declared_conversion + contract_match 列 + `field_mapping_all_match` 字段，Phase 4A Orchestrator 机验 evidence table（不匹配则立即 corrective retry），micro-loop 与 Reviewer 输出结构化 `field_mapping_diff` JSON。<br><br>新增 FAILURE 23 + Global Rule 26：需求可追溯门控。Planner §2d 产出 requirements_traceability.matrix；Implementer 输出 covered_requirements；Phase 4A 聚合覆盖率并在 <95% 或 MUST 缺失时 corrective replan；Phase 5B verifier 独立 RTV，差异 >5% 触发 auto-fix loop（最多 2 轮）。 |
 | v9.6 | 2026-06-13 | Anthropic [harness-design-long-running-apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) 对齐：(1) Phase 3B AC 验签（reviewer fast-mode 评每条 AC，planner §2e 单次 corrective replan）；(2) Phase 4A.5 任务级 micro-loop（条件触发：T_contract_*/touches_field_mapping_boundary；reviewer THIN MODE 3 检查；最多 2 轮 refine；implementer §1g 处理回灌）；(3) Field Mapping 责任拆分（designer §2c 改为 ≤12 行方向声明，implementer §1e 产 grep-anchored Evidence Table，reviewer diff）；(4) Per-Skill Sub-Artifact 协议（reviewer 把证据写入 `review_artifact_dir/batch-N-*.md`，主报告精简引用）；(5) Calibration Anchors（每维度 2/5/8 锚定例，10 分保留，抗自评分通胀）；(6) Layer ROI 表（14 行 × 3 run 滚动窗口）+ Ablation Run 协议（唯一可信删层证据，安全规则）；(7) Harness Assumption Snapshot；(8) Phase 6 Checklist E（9 行）；(9) reviewer 三模式路由（batch_full/micro_loop/ac_negotiation），planner §2d per-task tagging；(10) FAILURE 18-21 + Global Rules 20-22；必选 skill 数 12→13；典型调度次数 6-9→7-11。 |
 | v9.5 | 2026-05-18 | gstack 4 技能集成（安全 + 性能 + 排错 + 健康度）：FAILURE 15+16 + Global Rules 15-18；reviewer 集成 /cso（OWASP+STRIDE，security_audit 质量门）；finisher 集成 /benchmark（Core Web Vitals 基线，perf_baseline 字段，前端时强制）；implementer 集成 /investigate（Iron Law 系统化排错协议，3 cycle 收敛）；Phase 7 集成 /health（5 维度复合质量分 + 趋势）；必选 skill 数 8→12；Phase 6 审计表 8 行→12 行；gstack 依赖从 1 个扩展到 5 个。 |
 | v9.4 | 2026-05-18 | Cross-Layer Field Mapping Contract（纵向跨层）：FAILURE 14 + 5 层防御（Researcher §4 API naming scan / Designer §2c contract chapter / Frontend Designer §2b honor contract / Implementer §1e adherence + grep self-check / Reviewer cross-layer check + 6-row severity matrix）；Phase 1+2 双层验证门控；Global Rule 14（跨层映射失配=BLOCKER）。 |
