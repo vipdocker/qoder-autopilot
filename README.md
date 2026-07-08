@@ -1,4 +1,4 @@
-# Qoder Autopilot v9.6 — 安装指南
+# Qoder Autopilot v9.6.1 — 安装指南
 
 ## 概述
 

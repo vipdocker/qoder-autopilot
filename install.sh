@@ -1,5 +1,5 @@
 #!/bin/bash
-# Qoder Autopilot v9.6 — Install Script
+# Qoder Autopilot v9.6.1 — Install Script
 # Usage: bash install.sh
 
 set -e
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}Qoder Autopilot v9.6 — Installing...${NC}"
+echo -e "${CYAN}Qoder Autopilot v9.6.1 — Installing...${NC}"
 echo ""
 
 # ─── Pre-flight checks ───

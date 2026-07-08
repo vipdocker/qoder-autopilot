@@ -88,6 +88,27 @@ for f in "$AGENT_SRC"/engineering-autopilot-*.md; do
   fi
 done
 
+# Banner/title versions (human-facing text drifts silently — check it too)
+check_banner() {
+  if grep -qF "$2" "$1" 2>/dev/null; then
+    pass "$3 banner carries v$CANON"
+  else
+    fail "$3 banner does NOT carry v$CANON (update the title/header text)"
+  fi
+}
+check_banner "$SKILL_SRC/SKILL.md"      "# Qoder Autopilot v$CANON" "SKILL.md H1"
+check_banner "$SKILL_SRC/SKILL.md"      "description: \"v$CANON"   "SKILL.md description"
+check_banner "$SCRIPT_DIR/README.md"    "# Qoder Autopilot v$CANON" "README.md H1"
+check_banner "$SCRIPT_DIR/install.sh"   "Qoder Autopilot v$CANON"   "install.sh"
+check_banner "$SCRIPT_DIR/uninstall.sh" "Qoder Autopilot v$CANON"   "uninstall.sh"
+
+# README version-history table must contain a row for the canonical version
+if grep -qE "^\| v$CANON " "$SCRIPT_DIR/README.md"; then
+  pass "README.md 版本历史 has a v$CANON row"
+else
+  fail "README.md 版本历史 missing a v$CANON row (changelog not updated)"
+fi
+
 # ═══ Check 2: Mode contract (phase dispatch → reviewer mode selection) ═══
 section "2. Mode contract"
 
