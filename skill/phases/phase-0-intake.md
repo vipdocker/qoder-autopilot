@@ -16,6 +16,19 @@
    - What does "done" look like? (acceptance criteria)
    - What's the narrowest useful version? (MVP scope)
    → If user's requirements are vague on any point, ASK before proceeding.
+
+5b. Completion Condition — four-part framing (Codex /goal wording; DOC-ONLY, no new layer)
+   Frame "done" as a verifiable contract, NOT a wish. Capture four fields:
+     - Objective:    one-sentence target outcome
+     - Constraints:  what must NOT change on the way there (public API, deps, perf bounds)
+     - Non-goals:    explicit out-of-scope items — FIRST-CLASS field (guards scope creep)
+     - Verification: how "done" is proven (type/lint/build PASS, a named behavior, RTV coverage)
+   ⛔ This adds NO new gate, loop, or goal object. The pipeline's existing verifiability
+      machinery consumes these fields as-is: Phase 3B AC negotiation checks them for
+      AMBIGUOUS/NO, Phase 3 RTM maps them to tasks, Phase 5B RTV verifies coverage.
+      It ONLY sharpens the wording the user confirms at step 7.
+   ⛔ Non-goals rides along in the existing requirements confirmation and propagates to
+      the planner/reviewer as a scope constraint — no new wiring, no downstream changes.
 6. Detect: has_frontend? (UI, pages, CSS, client JS, data display)
 
 6.5 INTENT RECOGNITION & SKILL INJECTION (v9.6.1 — ONCE per feature, here only)
@@ -99,8 +112,9 @@
       to belong everywhere, it's either too generic to help, or it duplicates
       an existing baseline skill.
 
-7. HUMAN GATE: user confirms requirements + acceptance criteria
+7. HUMAN GATE: user confirms requirements + acceptance criteria + non-goals
    (combined with the §6.5(d) injection-confirm gate to keep gates at 1 per phase)
 8. Write state: { current_phase: "RESEARCH", feature: "...", has_frontend: ...,
+   completion_condition: { objective, constraints, non_goals, verification },
    injected_skills: {...}, injection_signals: {...} }
 ```
