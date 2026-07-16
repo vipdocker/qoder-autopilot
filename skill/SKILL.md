@@ -1,10 +1,10 @@
 ---
 name: qoder-autopilot
-description: "v9.6.1 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.6: 对齐 Anthropic harness-design — Phase 3B AC 协商 + Phase 4A.5 task-level micro-loop + reviewer 子产物落盘 + Layer ROI 数据采集 + harness 假设可证伪。v9.6.1: 契约漂移审计 + validate.sh 自校验 + 数据存在性/需求可追溯门控。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
-version: 9.6.1
+description: "v9.7.0 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.6: 对齐 Anthropic harness-design — Phase 3B AC 协商 + Phase 4A.5 task-level micro-loop + reviewer 子产物落盘 + Layer ROI 数据采集 + harness 假设可证伪。v9.6.1: 契约漂移审计 + validate.sh 自校验 + 数据存在性/需求可追溯门控。v9.7: Complexity Ratchet — 治理 harness 单调膨胀（净层数 delta + 强制 DROP/MERGE 提名 + 逐层可证伪假设）。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
+version: 9.7.0
 ---
 
-# Qoder Autopilot v9.6.1 — Lean Orchestrator
+# Qoder Autopilot v9.7.0 — Lean Orchestrator
 
 > **Version history, rationale & per-version changelogs:** see `README.md` (install-time only, not loaded at runtime).
 > This file is the runtime spine — protocols, gates, rules. It tells you **what to do now**, not **why we got here**.
@@ -101,10 +101,17 @@ FAILURE 20: design 阶段 over-specify field mapping → designer 拍错下游�
     any inconsistency = BLOCKER. Errors surface at earliest detectable layer.
 
 FAILURE 21: 模型升级后 harness 不缩减 → 始终按"最坏模型"成本付费，无 ROI 数据砍层.
-  FIX → Phase 7 LAYER ROI TABLE + HARNESS ASSUMPTION SNAPSHOT + ABLATION RUN HOOK.
-    Per retro: record (fire_count, blocker_catch, model_used) per defense layer + 1 line
-    "本 harness 当前假设模型做不到: {X}". 3+ runs trend → data-driven ablation,
-    not intuition. See reference.md §Layer ROI Tracking / Ablation Run Protocol.
+  FIX → Phase 7 LAYER ROI TABLE + HARNESS ASSUMPTION SNAPSHOT + ABLATION RUN HOOK
+    + COMPLEXITY RATCHET (v9.7).
+    Per retro: record (fire_count, blocker_catch, model_used) per defense layer + a
+    PER-LAYER falsifiable assumption "本层假设模型做不到: {X}; 由 ablation 证伪".
+    3+ runs trend → data-driven ablation, not intuition.
+    COMPLEXITY RATCHET: harness 只有在同一版本也提名"砍什么"时才允许生长。任何新增
+    mandatory layer/skill/rule 的版本 MUST 在 Phase 7 Complexity Ratchet Ledger 记录
+    net-layer delta 并提名 ≥1 个 DROP/MERGE 候选（或显式记 "none yet — first ablation
+    pending"）。只加不提砍 = 本故障复发。优先 EXTEND 既有层而非 ADD 新层；同一故障被
+    防御 >2 次时优先 MERGE。
+    See reference.md §Layer ROI Tracking / Ablation Run Protocol / Complexity Ratchet.
 
 FAILURE 22: Agent/接口"返回了但无数据" — 输出格式合法、status=PASS，但关键载荷为空
   (change_registry 空、research_brief 无发现、API response 无字段、前端无 EMPTY 状态).
@@ -365,7 +372,7 @@ Write BEFORE and AFTER every Task(). Read at start of every phase.
 
 ```json
 {
-  "version": "9.6.1",
+  "version": "9.7.0",
   "current_phase": "EXECUTE",
   "feature": "...",
   "has_frontend": true,
@@ -427,7 +434,11 @@ Write BEFORE and AFTER every Task(). Read at start of every phase.
     "phase7_health":                  { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "intent_injection":               { "fire_count": 0, "blocker_catch": 0, "helped_phases": [] }
   },
-  "harness_assumption": "model cannot reliably {X} on its own — verify next release",
+  "harness_assumption": {
+    "global": "model cannot reliably {X} on its own — re-verify each model upgrade",
+    "per_layer": {}
+  },
+  "complexity_ratchet": { "layers_added": [], "layers_removed": [], "net_delta": 0, "drop_merge_candidates": [] },
   "ablation_run": false,
   "disabled_layer": null,
   "model_used": { "designer": "...", "implementer": "...", "reviewer": "..." },
@@ -568,7 +579,7 @@ Phase 7: EVOLVE         [main session]    Retro → /health score → Layer ROI 
 19. **Retry by protocol, not by instinct.** When ANY dispatch fails, traverse the UNIVERSAL RETRY PROTOCOL section — DO NOT decide retry strategy ad-hoc. Classify first (FATAL/TRANSIENT/CODE/MALFORMED), then apply the matching path (BLOCKED / backoff / corrective / shrinkage). Every attempt is recorded in state.dag[id].attempts. NEVER reuse same prompt after CODE/MALFORMED. NEVER reach BLOCKED without exhausting prompt shrinkage first.
 20. **AC verifiability is a gate, not an opinion.** Phase 3B AC NEGOTIATE is MANDATORY between PLAN and EXECUTE. Reviewer (fast mode) reads plan_doc and returns per-AC verdict (CLEAR/AMBIGUOUS/UNCOVERED/CONTRADICTORY + suggested fix). Any non-CLEAR → planner corrective pass (max 1) before EXECUTE starts. Skipping Phase 3B = FAILURE 18 reverts to v9.5 batch-level rework cost.
 21. **Micro-loop high-risk tasks at task boundary, not batch boundary.** During Phase 4A, for ANY task with id matching T_contract_* OR task.touches_field_mapping_boundary == true, the implementer MUST dispatch the thin reviewer (spec+contract+field_mapping only, NO cso/ast) immediately after self-verify. Max 2 refine cycles within the task. NEVER advance to next task in batch with an UNVERIFIED contract task. Maps to harness-design generator-evaluator pattern.
-22. **Layer ROI + harness assumption snapshot in every retro.** Phase 7 retro MUST populate the Layer ROI table (per-layer ran, caught_issue, effort_estimate, model_used) AND record one line "本 harness 当前假设模型做不到: {X}". After 3 cumulative runs, the orchestrator surfaces any layer with ran == true AND caught_issue == false across all 3 runs as an ABLATION CANDIDATE in the evolution proposals. NO retro without these two artifacts.
+22. **Layer ROI + per-layer harness assumption + complexity ratchet in every retro.** Phase 7 retro MUST populate the Layer ROI table (per-layer ran, caught_issue, effort_estimate, model_used), record a PER-LAYER falsifiable harness assumption, AND fill the Complexity Ratchet Ledger. After 3 cumulative runs, any layer with ran == true AND caught_issue == false across all 3 runs is surfaced as an ABLATION CANDIDATE. COMPLEXITY RATCHET (FAILURE 21 defense): the ledger records this run's net-layer delta; a release that added a mandatory layer/skill/rule WITHOUT naming a DROP/MERGE candidate is flagged as FAILURE 21 recurrence and blocks a clean retro. Prefer extend-existing over add-new; prefer merge-redundant over keep-parallel. NO retro without these THREE artifacts.
 23. **Per-task model tier from planner.** (v9.6.1) For each implementer dispatch in Phase 4A, read `dag[task_id].recommended_model` (cheap/standard/premium) from plan_doc and route to the matching model. Missing field → default "standard" (back-compat). Auto-escalate: 2 consecutive failures on the same task → bump one tier (cheap→standard→premium) before next attempt; record `attempts[].model_used` in state.json so retro can compute cost-vs-quality ROI per tier.
 24. **Intent-injection propagation.** (v9.6.1) Phase 0 §6.5 produces `state.injected_skills[<agent>]` (human-confirmed). For EVERY Task() dispatch in Phases 1–5, the orchestrator MUST append an `Injected Skills (v9.6.1 intent-recognition):` block to the assignment, listing each injected skill + `why_match` reason. Agents MUST reciprocate by reporting `injection_used: [<skill_name>, ...]` in their output JSON (empty array if none were called). Phase 7 retro reads these to populate `state.layer_roi.intent_injection`. Missing injected_skills (e.g., legacy state) → fall back silently to agent baseline `skills:` list (back-compat). NEVER inject without the Phase 0 human gate; NEVER inject the same skill into >2 agent roles.
 25. **Data presence is a gate, not an assumption.** (v9.6.1) A valid status/gate/proofs block is NOT enough. Every phase's deliverable MUST be checked for empty-shell returns: research_brief with real findings, change_registry with actual files, reviewer sub-artifacts with real evidence, API payloads with at least one sample field, and frontend EMPTY/ERROR states for no-data scenarios. Empty-but-valid output = MALFORMED → retry protocol.

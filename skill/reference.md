@@ -1,4 +1,4 @@
-<!-- version: 9.6.1 -->
+<!-- version: 9.7.0 -->
 # Reference Guide
 
 Read this file when making quality gate, resource limit, or error classification decisions.
@@ -382,4 +382,44 @@ RECORD in retro:
     has NOT triggered in the last 3 runs.
   - If feature is high-risk (production-critical, security-sensitive), defer ablation
     to a lower-risk feature.
+```
+
+## Complexity Ratchet
+
+```
+PURPOSE: operationalize FAILURE 21 defense + Global Rule 22. Anthropic's harness-design
+article: harnesses grow monotonically because nobody prices each layer, and the model
+assumptions baked into each layer go stale as models improve. The ratchet forces every
+release to pay for growth with a cut proposal.
+
+THE RULE (enforced at Phase 7 Complexity Ratchet Ledger):
+  A release may ADD a mandatory layer/skill/rule ONLY IF the same release's ledger records:
+    (a) net-layer delta (added − removed), and
+    (b) ≥1 DROP/MERGE candidate (sourced from Layer ROI DROP/SHRINK verdicts),
+        OR an explicit "none yet — first ablation pending" when no run history exists.
+  Growth with neither = FAILURE 21 recurrence → flagged at the evolution human gate.
+
+PREFERENCE ORDER (cheapest complexity first):
+  1. EXTEND an existing layer/rule/failure mode (no new count).      ← cheapest
+  2. MERGE redundant layers when one failure mode is defended >2×.
+  3. ADD a new layer — only when 1 and 2 are impossible, paired with a cut candidate.
+
+REDUNDANCY HEURISTIC (when to MERGE):
+  Count how many distinct layers defend the SAME failure mode id. If > 2, the surplus
+  layers are MERGE candidates UNLESS each catches a DISTINCT sub-class with evidence
+  (Layer ROI caught_issue distinguishes them). Example: FAILURE 14 (field mapping) is
+  currently defended at L1–L7 (7 layers); only L1 (scan), L4 (implement-time evidence),
+  and L7 (review gate) catch distinct classes — L5/L6 largely re-check L4's evidence table.
+
+RELATIONSHIP TO ABLATION:
+  The ratchet NAMES candidates (cheap, every retro). Ablation VALIDATES removal (expensive,
+  next-run experiment). Ledger DROP candidate → Ablation Run Protocol → confirmed cut.
+  Never remove a layer on the ledger alone; the ablation is the admissible evidence.
+
+⛔ RATCHET SAFETY:
+  - The ratchet governs OPTIONAL defense layers, NEVER HARD CORRECTNESS GATES
+    (4B spec-compliance, 5A type/lint/build). Those are baseline safety, not negotiable.
+  - "Extend-over-add" must not bloat one layer into an unreadable mega-layer; if an
+    extended layer outgrows its phase file's scope, a split is allowed (counts as an
+    ADD and needs a paired cut candidate).
 ```

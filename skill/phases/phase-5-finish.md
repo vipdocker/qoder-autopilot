@@ -1,4 +1,4 @@
-<!-- version: 9.6.1 -->
+<!-- version: 9.7.0 -->
 # Phase 5: FINISH → Task() + VERIFY → Task() → HUMAN GATE
 
 **Three steps: 5A finisher (branch prep + static checks), 5B independent verification

@@ -1,4 +1,4 @@
-<!-- version: 9.6.1 -->
+<!-- version: 9.7.0 -->
 # Phase 1: RESEARCH → Task()
 
 AGENT: `engineering-autopilot-researcher.md`
