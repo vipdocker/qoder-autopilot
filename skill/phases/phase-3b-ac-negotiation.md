@@ -1,4 +1,4 @@
-<!-- version: 9.7.0 -->
+<!-- version: 9.7.1 -->
 # Phase 3B: AC NEGOTIATION → Task() (reviewer fast mode)
 
 **NEW in v9.6.** Maps to Anthropic harness-design "Sprint Contract negotiation" pattern.

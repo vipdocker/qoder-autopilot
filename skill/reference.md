@@ -1,4 +1,4 @@
-<!-- version: 9.7.0 -->
+<!-- version: 9.7.1 -->
 # Reference Guide
 
 Read this file when making quality gate, resource limit, or error classification decisions.
@@ -302,15 +302,13 @@ WHAT TO RECORD per run, per layer:
 
 LAYER IDS (canonical):
   phase1_baseline_signature
-  phase1_api_field_naming
   phase1_data_presence          // v9.6.1: research_brief empty-shell detection
-  phase2a_field_mapping_contract
+  field_mapping_contract        // v9.7.1: merged scan (researcher §4) + declare (designer §2c)
   phase2b_frontend_design
   phase3b_ac_negotiation
   phase3_requirements_traceability   // v9.6.1: planner RTM baseline
   phase4a_requirements_coverage      // v9.6.1: orchestrator aggregates covered_requirements
-  phase4a_field_mapping_gate         // v9.6.1: orchestrator parses evidence table & rejects mismatches
-  phase4a5_field_mapping_diff        // v9.6.1: micro-loop structured field mapping diff
+  field_mapping_gate            // v9.7.1: merged deterministic 4A gate (evidence + spot-check) + 4B reviewer check
   phase4a5_micro_loop
   phase4b_requesting_code_review
   phase4b_ast_analysis
@@ -407,9 +405,10 @@ PREFERENCE ORDER (cheapest complexity first):
 REDUNDANCY HEURISTIC (when to MERGE):
   Count how many distinct layers defend the SAME failure mode id. If > 2, the surplus
   layers are MERGE candidates UNLESS each catches a DISTINCT sub-class with evidence
-  (Layer ROI caught_issue distinguishes them). Example: FAILURE 14 (field mapping) is
-  currently defended at L1–L7 (7 layers); only L1 (scan), L4 (implement-time evidence),
-  and L7 (review gate) catch distinct classes — L5/L6 largely re-check L4's evidence table.
+  (Layer ROI caught_issue distinguishes them). Worked example: FAILURE 14 (field mapping)
+  WAS defended at L1–L7 (7 layers); v9.7.1 merged it to 3 roles — CONTRACT (scan+declare),
+  EVIDENCE (implementer grep table), GATE (deterministic 4A + independent 4B) — dropping the
+  redundant micro-loop LLM diff. Measurable result: canonical layer_roi 21 → 19.
 
 RELATIONSHIP TO ABLATION:
   The ratchet NAMES candidates (cheap, every retro). Ablation VALIDATES removal (expensive,

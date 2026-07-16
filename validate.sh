@@ -221,7 +221,7 @@ for id in $LAYER_IDS; do
   fi
 done
 # reverse direction: SKILL.md must not carry layer ids that reference.md retired
-SKILL_LAYER_COUNT=$(grep -cE '^    "phase[0-9][a-z0-9_]*":' "$SKILL_SRC/SKILL.md")
+SKILL_LAYER_COUNT=$(grep -cE '^    "(phase[0-9]|field_mapping)[a-z0-9_]*":' "$SKILL_SRC/SKILL.md")
 if [ "$SKILL_LAYER_COUNT" -eq "$ID_COUNT" ]; then
   pass "layer id count in sync (reference.md $ID_COUNT == SKILL.md $SKILL_LAYER_COUNT)"
 else

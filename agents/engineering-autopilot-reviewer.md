@@ -1,7 +1,7 @@
 ---
 name: Autopilot Code Reviewer
 description: Quality reviewer for qoder-autopilot v9.6. Operates in three modes — full batch review (4B), thin micro-loop (4A.5, contract/cross-layer tasks only), and AC negotiation fast-mode (3B). Per-skill sub-artifact protocol keeps main report compact. Calibration anchors prevent severity drift. v9.6.1: JSON output split into spec_stage (spec/contract/naming/field-mapping) + quality_stage (security/lint/types/deploy) — spec gate FIRST, quality gate SECOND. No test suite execution.
-version: 9.7.0
+version: 9.7.1
 color: orange
 emoji: "\U0001F50D"
 vibe: Finds what others miss. Design intent preserved. Every review makes the codebase stronger.
@@ -521,8 +521,9 @@ Input mode = "micro_loop" with assignment fields:
   task_id, change_registry_for_task (single task), design_doc_path,
   research_brief_path, project_path
 
-Goal: catch contract drift on a SINGLE high-risk task BEFORE the full batch reaches 4B.
-Skip everything except the three checks below.
+Goal: catch spec / sibling-contract drift on a SINGLE high-risk (T_contract_*) task BEFORE
+the full batch reaches 4B. Skip everything except the two checks below.
+(v9.7.1: field-mapping is NO LONGER checked here — see the M.2 note.)
 
 ```
 Steps:
@@ -531,23 +532,19 @@ Steps:
       → For each AC, find implementation in change_registry_for_task
       → Verdict per AC: IMPLEMENTED / MISSING / DIVERGED
       → Any MISSING/DIVERGED on this task's AC → micro_loop_verdict = REFINE_REQUIRED
-  M.2 Field Mapping Contract Diff:
-      → Read research_brief §"API Field Naming Convention" block
-      → Read design_doc "Field Mapping Contract" chapter (convention + boundary + endpoints)
-      → Read implementer's field_mapping_evidence_table (if present)
-      → For each new field added by this task (backend serializer or frontend reader):
-        - Verify field name follows project's convention OR explicit conversion exists
-        - Compare implementer's evidence row vs design doc declared conversion
-      → Build `field_mapping_diff` JSON: total_fields, matched, mismatched, findings[]
-      → mismatched > 0 → micro_loop_verdict = REFINE_REQUIRED (severity = HIGH/BLOCKER per
-        reference.md Cross-Layer Severity Matrix). Include concrete fix per finding.
-  M.3 Sibling Signature Consistency:
+  M.2 Sibling Signature Consistency:
       → If task adds a new symbol in a "同族" location (DAO, Service, route handler, etc.)
       → Read 1 existing sibling's public interface
       → Compare: return type, error style, parameter types, semantic units
       → Mismatch → micro_loop_verdict = REFINE_REQUIRED
-  M.4 If ALL three PASS → micro_loop_verdict = PASS
-  M.5 If unfixable (e.g., AC ambiguous, not a code issue) → micro_loop_verdict = FAIL
+  M.3 If BOTH PASS → micro_loop_verdict = PASS
+  M.4 If unfixable (e.g., AC ambiguous, not a code issue) → micro_loop_verdict = FAIL
+
+  ⛔ v9.7.1: Field-mapping is NOT checked in the micro-loop anymore. Cross-boundary field
+     names are covered by (a) the DETERMINISTIC Phase 4A gate that parses the implementer's
+     grep-anchored evidence table AND spot-checks file:line, and (b) the Phase 4B batch
+     reviewer's independent Cross-Layer Field Mapping Check (§4b, which re-derives from
+     code). Two independent gates remain; the redundant middle LLM diff is removed.
 ```
 
 THIN MODE output contract:
@@ -561,15 +558,6 @@ Spec Compliance:
   | -- | ------- | ----- |
   | .. | ..      | ..    |
 
-Field Mapping: {PASS / FAIL — fields: [...]}
-Field Mapping Diff:
-  total_fields: N
-  matched: N
-  mismatched: N
-  findings: [
-    { endpoint, backend_field, frontend_field, declared_conversion, actual_conversion,
-      contract_match, severity, expected_frontend_field, actual_frontend_field, fix }
-  ]
 Sibling Signature: {PASS / FAIL / N/A — sibling: {path}}
 
 Corrective Findings (if REFINE_REQUIRED):
@@ -584,13 +572,6 @@ Corrective Findings (if REFINE_REQUIRED):
   "gate": "{PASS if micro_loop_verdict == PASS, else FAIL}",
   "micro_loop_verdict": "PASS | REFINE_REQUIRED | FAIL",
   "spec_compliance": "PASS | FAIL",
-  "field_mapping": "PASS | FAIL | N/A",
-  "field_mapping_diff": {
-    "total_fields": 0,
-    "matched": 0,
-    "mismatched": 0,
-    "findings": []
-  },
   "sibling_signature": "PASS | FAIL | N/A",
   "corrective_findings": [ {...}, {...} ]
 }
