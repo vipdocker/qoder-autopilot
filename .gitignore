@@ -17,3 +17,6 @@ Desktop.ini
 # Local test artifacts
 *.log
 *.tmp
+
+# Distributable plugin archives (published as GitHub Release assets, not committed)
+dist/*.zip
