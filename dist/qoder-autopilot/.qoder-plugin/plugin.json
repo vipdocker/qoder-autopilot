@@ -1,7 +1,7 @@
 {
   "name": "qoder-autopilot",
   "displayName": "Qoder Autopilot",
-  "version": "9.6.1",
+  "version": "9.7.0",
   "description": "Multi-agent end-to-end development pipeline that orchestrates 7 specialist agents from requirements to release (research → design → plan → implement → review → finish).",
   "descriptionZh": "多 Agent 自动开发流水线：调度 7 个专业 Agent 完成从需求到发布的全流程编排（研究→设计→规划→实现→评审→完成）。",
   "author": {

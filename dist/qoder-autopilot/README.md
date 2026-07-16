@@ -43,7 +43,7 @@ qoder-autopilot/
 
 - **源工程**：本地目录 `/Users/duff/Documents/Lingma-Demo/qoder-autopilot`
 - **上游仓库**：https://github.com/vipdocker/qoder-autopilot
-- **版本**：v9.6.1（与源 `skill/SKILL.md` frontmatter `version` 一致）
+- **版本**：v9.7.0（与源 `skill/SKILL.md` frontmatter `version` 一致）
 - **许可证**：Apache-2.0（见源工程 `LICENSE`）
 - **打包方式**：源工程的 `skill/` → 插件 `skills/qoder-autopilot/`；源 `agents/` → 插件 `agents/`。
   所有 skill / agent / phase 文件按原样复制，未改写工作流、触发条件、引用关系与安全约束。
