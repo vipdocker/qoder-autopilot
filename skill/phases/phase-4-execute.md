@@ -1,4 +1,4 @@
-<!-- version: 9.6.1 -->
+<!-- version: 9.7.0 -->
 # Phase 4: EXECUTE + REVIEW
 
 **THREE mandatory parts per batch in v9.6: 4A (implement) → 4A.5 (conditional micro-loop) → 4B (batch review).**

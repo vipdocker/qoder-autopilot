@@ -1,5 +1,5 @@
 #!/bin/bash
-# Qoder Autopilot v9.6.1 — Install Script
+# Qoder Autopilot v9.7.0 — Install Script
 # Usage: bash install.sh
 
 set -e
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}Qoder Autopilot v9.6.1 — Installing...${NC}"
+echo -e "${CYAN}Qoder Autopilot v9.7.0 — Installing...${NC}"
 echo ""
 
 # ─── Pre-flight checks ───
@@ -176,6 +176,13 @@ if [ "$ERRORS" -eq 0 ]; then
   echo "  - Data presence gate: FAILURE 22 — empty-shell agent/interface output is rejected before downstream phases consume it"
   echo "  - Cross-layer field mapping hardening: designer §2c requires representative endpoint/field pairs; implementer §1e Evidence Table carries endpoint + declared_conversion + contract_match + field_mapping_all_match; Phase 4A orchestrator rejects any mismatched row; reviewer/micro-loop emit structured field_mapping_diff JSON"
   echo "  - Requirements traceability gate: FAILURE 23 + Global Rule 26 — planner §2d produces requirements_traceability.matrix; implementer reports covered_requirements; Phase 4A aggregates coverage and blocks if MUST+SHOULD < 95%; Phase 5B verifier runs independent RTV and triggers auto-fix loop (max 2 cycles) when gap > 5%"
+  echo ""
+  echo -e "${CYAN}v9.7.0 (Complexity Ratchet — harness anti-bloat governance):${NC}"
+  echo "  - Complexity Ratchet: the harness may grow ONLY if the same release names a DROP/MERGE candidate (FAILURE 21 defense / Global Rule 22)"
+  echo "  - Landed by EXTENSION, not new counts — FAILURE 21 FIX + Global Rule 22 extended; net failure/rule delta = 0 (walk-the-talk)"
+  echo "  - Phase 7 Complexity Ratchet Ledger (net-layer delta + forced DROP/MERGE proposal) + per-layer falsifiable harness assumption table"
+  echo "  - reference.md §Complexity Ratchet: EXTEND > MERGE > ADD preference order + redundancy heuristic"
+  echo "  - First DROP/MERGE candidate named: FAILURE 14 field-mapping 7 layers → merge to ≤3 in v9.7.1 (ablation-validated)"
 else
   echo -e "${RED}Installation finished with errors. Check output above.${NC}"
   exit 1

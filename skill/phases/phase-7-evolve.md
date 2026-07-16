@@ -1,4 +1,4 @@
-<!-- version: 9.6.1 -->
+<!-- version: 9.7.0 -->
 # Phase 7: EVOLVE — Skill Self-Evolution with Persistent Memory
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -37,6 +37,10 @@
    - Self-audit insights (e.g., "I consistently skip skill X")
    - Context compression lessons (e.g., "session ran out of context at Phase 4")
    - Health score trends (e.g., "lint score declining — new code not following conventions")
+   - Complexity ratchet (v9.7): compute this run's net-layer delta; if any layer/skill/rule
+     was ADDED this release, name ≥1 DROP/MERGE candidate (Global Rule 22). See ledger below.
+6.5 COMPLEXITY RATCHET GATE (v9.7 — MANDATORY): fill the Complexity Ratchet Ledger.
+    A release that grew the harness without naming a cut candidate = FAILURE 21 recurrence.
 7. HUMAN GATE: Present proposals, apply on approval
 8. Write PERSISTENT MEMORY to .qoder-autopilot-retro.md (project root)
 ```
@@ -238,6 +242,52 @@ model gets stronger, the assumptions may be obsolete".
 
 Trend question for human gate: "Are any of the mandatory skills/failures only there
 because of an OLDER, weaker model? Run an ablation in the next sprint to check."
+
+**Per-layer falsifiable assumption (v9.7 — populate `state.harness_assumption.per_layer`)**:
+For each defense layer, record the ONE model-capability assumption that justifies it, phrased
+so an ablation can FALSIFY it. The single global assumption becomes per-layer, testable claims:
+
+| Layer                          | Assumed model gap (falsifiable)                           |
+|--------------------------------|-----------------------------------------------------------|
+| phase4a5_micro_loop            | "model can't self-catch cross-layer field drift mid-task" |
+| phase2a_field_mapping_contract | "model won't declare a naming boundary unprompted"        |
+| phase4b_ast_analysis           | "model misses structural anti-patterns in review prose"   |
+
+If a layer's assumption is no longer true under the current model → it becomes an ablation
+candidate. Do NOT leave the assumption as a single vague line — one line per layer that runs.
+
+### Complexity Ratchet Ledger (v9.7 — MANDATORY)
+
+**Purpose**: enforce FAILURE 21 defense / Global Rule 22. The Anthropic article's single
+biggest warning is that harnesses grow monotonically because nobody prices each layer. This
+ledger makes every release account for its net complexity: the harness may grow ONLY if the
+same release also names what to shrink.
+
+```
+| Field                                | This Release                                     |
+|--------------------------------------|--------------------------------------------------|
+| Version                              | {e.g. v9.7.0}                                    |
+| Layers/skills/rules ADDED            | {list, or "none"}                                |
+| Layers/skills/rules REMOVED / MERGED | {list, or "none"}                                |
+| Net-layer delta                      | added − removed (target: ≤ 0 over time)          |
+| DROP/MERGE candidate(s)              | {≥1 name from Layer ROI DROP/SHRINK verdicts,    |
+|                                      |  or "none yet — first ablation pending"}         |
+| Extend-over-add honored?             | YES/NO (extended existing layers, not new ones?) |
+```
+
+**Gate**: if ADDED is non-empty AND DROP/MERGE candidate is empty AND "first ablation pending"
+is not logged → FLAG as FAILURE 21 recurrence in the evolution proposals. The human gate
+decides whether the growth is justified.
+
+**Write** `state.complexity_ratchet = { layers_added, layers_removed, net_delta,
+drop_merge_candidates }`. Phase 0 of the NEXT run reads it: a standing DROP candidate should
+be scheduled as the next Ablation Run.
+
+**This release (v9.7.0) self-application** — the ratchet applied to itself:
+- ADDED: 0 new failure modes / rules. Complexity Ratchet was folded INTO FAILURE 21 + Global
+  Rule 22 by EXTENSION, not new counts. Net-rule delta = 0. Extend-over-add honored = YES.
+- DROP/MERGE candidate named: field-mapping defense is currently 7 layers (L1–L7) for ONE
+  failure mode (FAILURE 14) — flagged for MERGE to ≤3 in v9.7.1, to be validated by ablation.
 
 ### Ablation Run (v9.6 — OPTIONAL TRIGGER)
 

@@ -1,7 +1,7 @@
 ---
 name: Autopilot Finisher
 description: Branch completion + release validation agent for qoder-autopilot v9.6.1. Prepares the branch, runs static checks, performance baseline (IF frontend), and reports release readiness. No test suite execution.
-version: 9.6.1
+version: 9.7.0
 color: teal
 emoji: "\U0001F3C1"
 vibe: One pass to ship-ready. Clean branch, verified release.

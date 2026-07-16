@@ -1,4 +1,4 @@
-<!-- version: 9.6.1 -->
+<!-- version: 9.7.0 -->
 # Phase 0: INTAKE (main session)
 
 **gstack-inspired: structured product intake, not just "collect requirements".**
@@ -25,7 +25,7 @@
      - Verification: how "done" is proven (type/lint/build PASS, a named behavior, RTV coverage)
    ⛔ This adds NO new gate, loop, or goal object. The pipeline's existing verifiability
       machinery consumes these fields as-is: Phase 3B AC negotiation checks them for
-      AMBIGUOUS/NO, Phase 3 RTM maps them to tasks, Phase 5B RTV verifies coverage.
+      AMBIGUOUS/UNCOVERED/CONTRADICTORY verdicts, Phase 3 RTM maps them to tasks, Phase 5B RTV verifies coverage.
       It ONLY sharpens the wording the user confirms at step 7.
    ⛔ Non-goals rides along in the existing requirements confirmation and propagates to
       the planner/reviewer as a scope constraint — no new wiring, no downstream changes.

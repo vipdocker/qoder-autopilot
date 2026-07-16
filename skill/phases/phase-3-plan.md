@@ -1,4 +1,4 @@
-<!-- version: 9.6.1 -->
+<!-- version: 9.7.0 -->
 # Phase 3: PLAN → Task()
 
 AGENT: `engineering-autopilot-planner.md`
