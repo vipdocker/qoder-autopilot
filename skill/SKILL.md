@@ -66,7 +66,7 @@ FAILURE 14: 跨层字段名映射失配 — 后端 snake/前端 camel 无转换�
   FIX → Cross-Layer Field Mapping Contract (v9.7.1: 3 roles, merged from 7 layers):
     ① CONTRACT  Researcher SCAN + Designer DECLARE (convention + conversion boundary) |
     ② EVIDENCE  Implementer §1e grep-anchored Field Mapping Evidence Table (ground truth) |
-    ③ GATE      Phase 4A DETERMINISTIC gate (evidence-table consistency + file:line spot-check)
+    ③ GATE      Phase 4A DETERMINISTIC gate (consistency + token spot-check + conversion-bridge check)
                 + Phase 4B Reviewer independent Cross-Layer Check (re-derives from code;
                 no-conversion mismatch = BLOCKER).
     Frontend Designer honors contract names as authoring GUIDANCE (not a counted gate).

@@ -64,11 +64,17 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
          a. CONSISTENCY: EVERY row MUST have contract_match="YES" (or matches_contract=true),
             field_mapping_all_match MUST be true, mismatch_count MUST be 0.
          b. EVIDENCE SPOT-CHECK (v9.7.1 — catches fabricated / mistaken evidence rows,
-            the one sub-class the removed micro-loop used to catch): each row's grep proof is
-            "file:line". Deterministically read that file:line (or grep the file) and confirm
-            the claimed backend_field / frontend_field token ACTUALLY appears there. A row whose
-            proof does not contain the claimed field = evidence-integrity failure → treat as a
-            mismatch.
+            the sub-class the removed micro-loop used to catch). Two deterministic sub-checks:
+            b1. TOKEN PRESENCE: each row's grep proof is "file:line". Read it (or grep the file)
+                and confirm the claimed backend_field / frontend_field token ACTUALLY appears
+                there. A proof that does not contain the claimed token = evidence-integrity
+                failure → mismatch. (Catches typo'd / wrong field names.)
+            b2. CONVERSION BRIDGE (v9.7.1a — closes the seeded-defect probe gap): IF a row's
+                declared_conversion is a TRANSFORM (not "passthrough"/"none"), grep the declared
+                conversion-boundary file and confirm the converter ACTUALLY maps this
+                backend_field → frontend_field. A declared transform whose converter does not
+                handle the field silently DROPS it → runtime undefined, even though BOTH tokens
+                still exist in their own files (b1 alone cannot catch this) → mismatch.
        IF any mismatch OR any failed spot-check:
          → DO NOT mark task done. Classify as CODE failure.
          → Re-dispatch implementer ONCE with corrective instruction:
