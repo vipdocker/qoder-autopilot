@@ -1,4 +1,4 @@
-<!-- version: 9.7.0 -->
+<!-- version: 9.7.1 -->
 # Reference Guide
 
 Read this file when making quality gate, resource limit, or error classification decisions.
@@ -302,15 +302,13 @@ WHAT TO RECORD per run, per layer:
 
 LAYER IDS (canonical):
   phase1_baseline_signature
-  phase1_api_field_naming
   phase1_data_presence          // v9.6.1: research_brief empty-shell detection
-  phase2a_field_mapping_contract
+  field_mapping_contract        // v9.7.1: merged scan (researcher §4) + declare (designer §2c)
   phase2b_frontend_design
   phase3b_ac_negotiation
   phase3_requirements_traceability   // v9.6.1: planner RTM baseline
   phase4a_requirements_coverage      // v9.6.1: orchestrator aggregates covered_requirements
-  phase4a_field_mapping_gate         // v9.6.1: orchestrator parses evidence table & rejects mismatches
-  phase4a5_field_mapping_diff        // v9.6.1: micro-loop structured field mapping diff
+  field_mapping_gate            // v9.7.1: merged deterministic 4A gate (evidence + spot-check) + 4B reviewer check
   phase4a5_micro_loop
   phase4b_requesting_code_review
   phase4b_ast_analysis
@@ -326,6 +324,22 @@ LAYER IDS (canonical):
 WHEN TO RECORD:
   - At the end of each phase, update the relevant layer_roi entry.
   - Don't try to compute the verdict (KEEP/SHRINK/DROP) — Phase 7 retro does that.
+
+CANONICAL KEY DISCIPLINE + NON-COMPRESSIBLE MEASUREMENT (v9.7.1a — telemetry-drift guard):
+  The multi-run Layer ROI trend is the ratchet's ONLY cut-decision evidence — worthless if
+  keys drift or a run skips recording. Therefore:
+  1. KEYS: state.layer_roi keys MUST be EXACTLY the canonical ids above, verbatim.
+     ⛔ NEVER use a RETIRED id: phase4a_field_mapping_gate → field_mapping_gate;
+        phase1_api_field_naming / phase2a_field_mapping_contract → field_mapping_contract.
+     ⛔ NEVER invent ad-hoc ids (e.g. phase4b_batch_review is NOT canonical — use the
+        specific phase4b_* skill ids).
+     ⛔ NEVER omit a layer that ran. ran:true iff the layer's phase/skill executed (a gate
+        that produced an evidence table or verdict is ran:true even if caught_issue=false).
+  2. NON-COMPRESSIBLE: a "lightweight"/"compressed" run may compress the CREATIVE phases
+     (intake/research/design depth) but MUST STILL run Phase 6 audit + Phase 7 Layer ROI
+     recording + retro append. Skipping measurement is NOT a valid compression — it silently
+     breaks the ratchet. (Observed: a compressed run left a stub layer_roi under a retired id
+     and never appended a retro entry → two v9.7.1 runs produced ZERO trend data.)
 
 AGGREGATION (Phase 7):
   - Read state.layer_roi from this run + last 2 retro files (.qoder-autopilot-retro.md
@@ -407,9 +421,10 @@ PREFERENCE ORDER (cheapest complexity first):
 REDUNDANCY HEURISTIC (when to MERGE):
   Count how many distinct layers defend the SAME failure mode id. If > 2, the surplus
   layers are MERGE candidates UNLESS each catches a DISTINCT sub-class with evidence
-  (Layer ROI caught_issue distinguishes them). Example: FAILURE 14 (field mapping) is
-  currently defended at L1–L7 (7 layers); only L1 (scan), L4 (implement-time evidence),
-  and L7 (review gate) catch distinct classes — L5/L6 largely re-check L4's evidence table.
+  (Layer ROI caught_issue distinguishes them). Worked example: FAILURE 14 (field mapping)
+  WAS defended at L1–L7 (7 layers); v9.7.1 merged it to 3 roles — CONTRACT (scan+declare),
+  EVIDENCE (implementer grep table), GATE (deterministic 4A + independent 4B) — dropping the
+  redundant micro-loop LLM diff. Measurable result: canonical layer_roi 21 → 19.
 
 RELATIONSHIP TO ABLATION:
   The ratchet NAMES candidates (cheap, every retro). Ablation VALIDATES removal (expensive,

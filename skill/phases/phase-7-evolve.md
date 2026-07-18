@@ -1,4 +1,4 @@
-<!-- version: 9.7.0 -->
+<!-- version: 9.7.1 -->
 # Phase 7: EVOLVE — Skill Self-Evolution with Persistent Memory
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -42,7 +42,19 @@
 6.5 COMPLEXITY RATCHET GATE (v9.7 — MANDATORY): fill the Complexity Ratchet Ledger.
     A release that grew the harness without naming a cut candidate = FAILURE 21 recurrence.
 7. HUMAN GATE: Present proposals, apply on approval
-8. Write PERSISTENT MEMORY to .qoder-autopilot-retro.md (project root)
+8. Write PERSISTENT MEMORY to .qoder-autopilot-retro.md (project root) — APPEND this run's
+   entry; NEVER overwrite prior entries.
+9. ⛔ VERIFY THE APPEND (v9.7.1a — data-presence on the retro itself; FAILURE 22/23 guard):
+   After writing, RE-READ .qoder-autopilot-retro.md and confirm it now PHYSICALLY contains
+   THIS run's entry — grep for the feature name / run date AND this run's Layer ROI table.
+     • Found → set state.retro_saved = true.
+     • NOT found (write silently failed / wrong path / append skipped) → retry the append
+       ONCE; if still missing, set retro_saved = false and surface "retro append FAILED" at
+       the human gate. Do NOT advance to a clean DONE.
+   ⛔ NEVER set retro_saved = true without confirming the entry is in the file. A true flag
+     with no entry is a FALSE CLAIM (FAILURE 23) — it silently breaks the ratchet's 3-run
+     trend, which aggregates prior retro files. (Observed: run #3 set retro_saved:true but
+     appended nothing; the retro's last entry was still run #2.)
 ```
 
 ## Retro File Format (append-only, timestamped)
@@ -157,11 +169,11 @@ removal decision is possible. This table fixes that.
 | Layer / Skill / Gate           | Times Run | Caught Issue? | Effort Cost | Verdict |
 |--------------------------------|-----------|---------------|-------------|---------|
 | Phase 1 Baseline Signature     | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
-| Phase 1 API Field Naming       | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
-| Phase 2A Field Mapping Contract| {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
+| Field Mapping Contract         | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
 | Phase 2B frontend design       | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
 | Phase 3B AC Negotiation        | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
 | Phase 4A.5 Micro-Loop          | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
+| Field Mapping Gate             | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
 | Phase 4B requesting-code-review| {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
 | Phase 4B ast-code-analysis     | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
 | Phase 4B receiving-code-review | {n}       | YES/NO/N/A    | LOW/MED/HI  | KEEP/SHRINK/DROP |
@@ -188,6 +200,13 @@ Do not auto-remove.
 
 Source: aggregate per-phase proofs and state telemetry. A layer is "Run" if its
 state field is populated AND non-empty for the run.
+
+⛔ TELEMETRY-DRIFT FALLBACK (v9.7.1a): if state.layer_roi is drifted (retired / ad-hoc /
+omitted keys — see reference.md §Layer ROI Tracking) or absent (e.g. a compressed run skipped
+Phase 7 recording), DO NOT silently drop the trend. DERIVE each layer's ran / caught_issue from
+sub-artifacts — dag[*].proof + .qoder-autopilot/reviews/** — map them onto the CANONICAL ids,
+AND tag the run "telemetry-drift; ROI reconstructed" in the retro so the drift is visible and
+gets fixed, not hidden.
 
 ### Intent Injection ROI (v9.6.1 — MANDATORY when Phase 0 §6.5 produced injections)
 
@@ -250,7 +269,7 @@ so an ablation can FALSIFY it. The single global assumption becomes per-layer, t
 | Layer                          | Assumed model gap (falsifiable)                           |
 |--------------------------------|-----------------------------------------------------------|
 | phase4a5_micro_loop            | "model can't self-catch cross-layer field drift mid-task" |
-| phase2a_field_mapping_contract | "model won't declare a naming boundary unprompted"        |
+| field_mapping_contract         | "model won't declare a naming boundary unprompted"        |
 | phase4b_ast_analysis           | "model misses structural anti-patterns in review prose"   |
 
 If a layer's assumption is no longer true under the current model → it becomes an ablation
@@ -288,6 +307,16 @@ be scheduled as the next Ablation Run.
   Rule 22 by EXTENSION, not new counts. Net-rule delta = 0. Extend-over-add honored = YES.
 - DROP/MERGE candidate named: field-mapping defense is currently 7 layers (L1–L7) for ONE
   failure mode (FAILURE 14) — flagged for MERGE to ≤3 in v9.7.1, to be validated by ablation.
+
+**This release (v9.7.1) self-application** — the ratchet's FIRST real cut (net delta < 0):
+- REMOVED / MERGED: field-mapping defense 7 layers → 3 roles. Dropped the redundant micro-loop
+  LLM diff (old L6); merged the 2 declaration ROI IDs → `field_mapping_contract` and the 2 gate
+  ROI IDs → `field_mapping_gate`. Canonical layer_roi **21 → 19 (net −2)**.
+- ADDED: 1 deterministic grep spot-check INSIDE the existing Phase 4A gate (no new layer/ID —
+  a hardening of the kept gate that absorbs old L6's only unique sub-class: fabricated evidence).
+- Extend-over-add honored = YES. **First negative net-layer delta — the ratchet demonstrably works.**
+- Safety: two independent field-mapping gates remain (deterministic 4A + independent 4B re-derive),
+  so FAILURE 14 stays defended; ablation over the next runs confirms no escape.
 
 ### Ablation Run (v9.6 — OPTIONAL TRIGGER)
 

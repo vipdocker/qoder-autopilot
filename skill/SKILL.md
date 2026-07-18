@@ -1,10 +1,10 @@
 ---
 name: qoder-autopilot
-description: "v9.7.0 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.6: 对齐 Anthropic harness-design — Phase 3B AC 协商 + Phase 4A.5 task-level micro-loop + reviewer 子产物落盘 + Layer ROI 数据采集 + harness 假设可证伪。v9.6.1: 契约漂移审计 + validate.sh 自校验 + 数据存在性/需求可追溯门控。v9.7: Complexity Ratchet — 治理 harness 单调膨胀（净层数 delta + 强制 DROP/MERGE 提名 + 逐层可证伪假设）。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
-version: 9.7.0
+description: "v9.7.1 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.6: 对齐 Anthropic harness-design — Phase 3B AC 协商 + Phase 4A.5 task-level micro-loop + reviewer 子产物落盘 + Layer ROI 数据采集 + harness 假设可证伪。v9.6.1: 契约漂移审计 + validate.sh 自校验 + 数据存在性/需求可追溯门控。v9.7: Complexity Ratchet — 治理 harness 单调膨胀（净层数 delta + 强制 DROP/MERGE 提名 + 逐层可证伪假设）。v9.7.1: 字段映射 7 层→3 角色（首次证据驱动裁层，layer_roi 21→19）。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
+version: 9.7.1
 ---
 
-# Qoder Autopilot v9.7.0 — Lean Orchestrator
+# Qoder Autopilot v9.7.1 — Lean Orchestrator
 
 > **Version history, rationale & per-version changelogs:** see `README.md` (install-time only, not loaded at runtime).
 > This file is the runtime spine — protocols, gates, rules. It tells you **what to do now**, not **why we got here**.
@@ -63,12 +63,14 @@ FAILURE 13: 同族实现未被发现 — 命名/协议/风格与既有同层文�
     before Phase 2 → Designer treats it as CONTRACT CONSTRAINT.
 
 FAILURE 14: 跨层字段名映射失配 — 后端 snake/前端 camel 无转换层 → undefined.
-  FIX → Cross-Layer Field Mapping Contract (5-layer defense):
-    L1 Researcher SCAN (naming convention + conversion boundary) |
-    L2 Designer CONTRACT (per-endpoint mapping table) |
-    L3 Frontend Designer HONOR (state/props use contract frontend names) |
-    L4 Implementer ADHERE (serializer enforces wire names; grep self-check) |
-    L5 Reviewer CHECK (Cross-Layer Severity Matrix; no-conversion mismatch = BLOCKER).
+  FIX → Cross-Layer Field Mapping Contract (v9.7.1: 3 roles, merged from 7 layers):
+    ① CONTRACT  Researcher SCAN + Designer DECLARE (convention + conversion boundary) |
+    ② EVIDENCE  Implementer §1e grep-anchored Field Mapping Evidence Table (ground truth) |
+    ③ GATE      Phase 4A DETERMINISTIC gate (consistency + token spot-check + conversion-bridge check)
+                + Phase 4B Reviewer independent Cross-Layer Check (re-derives from code;
+                no-conversion mismatch = BLOCKER).
+    Frontend Designer honors contract names as authoring GUIDANCE (not a counted gate).
+    The redundant micro-loop LLM diff (old L6) was removed — two independent gates remain.
 
 FAILURE 15: 安全漏洞漏审 — Reviewer 无安全维度，OWASP/STRIDE 类问题进入生产.
   FIX → Phase 4B Reviewer MUST invoke /cso. security_audit quality gate.
@@ -354,7 +356,7 @@ On pipeline completion (Phase 6/7) or abort:
    Phase 4 EXECUTE:   DONE if ALL dag tasks have status "done" AND batch_reviews is non-empty
    Phase 5 FINISH:    DONE if human_gates.merge_strategy != null
    Phase 6 AUDIT:     DONE if audit_passed == true
-   Phase 7 EVOLVE:    DONE if retro_saved == true AND layer_roi_recorded == true
+   Phase 7 EVOLVE:    DONE if retro_saved == true AND .qoder-autopilot-retro.md actually contains this run's entry (VERIFY the file — do NOT trust the flag) AND layer_roi_recorded == true
 
 4. First phase where condition = FALSE → that is current_phase. Resume there.
 5. Acquire concurrency lock (Step 3 of lock protocol)
@@ -372,7 +374,7 @@ Write BEFORE and AFTER every Task(). Read at start of every phase.
 
 ```json
 {
-  "version": "9.7.0",
+  "version": "9.7.1",
   "current_phase": "EXECUTE",
   "feature": "...",
   "has_frontend": true,
@@ -412,15 +414,13 @@ Write BEFORE and AFTER every Task(). Read at start of every phase.
   "layer_roi_recorded": false,
   "layer_roi": {
     "phase1_baseline_signature":      { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
-    "phase1_api_field_naming":        { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase1_data_presence":           { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
-    "phase2a_field_mapping_contract": { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "field_mapping_contract":         { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase2b_frontend_design":        { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase3b_ac_negotiation":         { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase3_requirements_traceability": { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase4a_requirements_coverage":  { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
-    "phase4a_field_mapping_gate":     { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
-    "phase4a5_field_mapping_diff":    { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
+    "field_mapping_gate":             { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase4a5_micro_loop":            { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase4b_requesting_code_review": { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
     "phase4b_ast_analysis":           { "ran": false, "caught_issue": false, "finding_summary": null, "effort_estimate": null },
@@ -578,8 +578,8 @@ Phase 7: EVOLVE         [main session]    Retro → /health score → Layer ROI 
 18. **Health score in every retro.** Phase 7 orchestrator MUST invoke /health and record the composite score. Trend tracking across runs. DECLINING 2+ runs = HIGH-priority evolution proposal.
 19. **Retry by protocol, not by instinct.** When ANY dispatch fails, traverse the UNIVERSAL RETRY PROTOCOL section — DO NOT decide retry strategy ad-hoc. Classify first (FATAL/TRANSIENT/CODE/MALFORMED), then apply the matching path (BLOCKED / backoff / corrective / shrinkage). Every attempt is recorded in state.dag[id].attempts. NEVER reuse same prompt after CODE/MALFORMED. NEVER reach BLOCKED without exhausting prompt shrinkage first.
 20. **AC verifiability is a gate, not an opinion.** Phase 3B AC NEGOTIATE is MANDATORY between PLAN and EXECUTE. Reviewer (fast mode) reads plan_doc and returns per-AC verdict (CLEAR/AMBIGUOUS/UNCOVERED/CONTRADICTORY + suggested fix). Any non-CLEAR → planner corrective pass (max 1) before EXECUTE starts. Skipping Phase 3B = FAILURE 18 reverts to v9.5 batch-level rework cost.
-21. **Micro-loop high-risk tasks at task boundary, not batch boundary.** During Phase 4A, for ANY task with id matching T_contract_* OR task.touches_field_mapping_boundary == true, the implementer MUST dispatch the thin reviewer (spec+contract+field_mapping only, NO cso/ast) immediately after self-verify. Max 2 refine cycles within the task. NEVER advance to next task in batch with an UNVERIFIED contract task. Maps to harness-design generator-evaluator pattern.
-22. **Layer ROI + per-layer harness assumption + complexity ratchet in every retro.** Phase 7 retro MUST populate the Layer ROI table (per-layer ran, caught_issue, effort_estimate, model_used), record a PER-LAYER falsifiable harness assumption, AND fill the Complexity Ratchet Ledger. After 3 cumulative runs, any layer with ran == true AND caught_issue == false across all 3 runs is surfaced as an ABLATION CANDIDATE. COMPLEXITY RATCHET (FAILURE 21 defense): the ledger records this run's net-layer delta; a release that added a mandatory layer/skill/rule WITHOUT naming a DROP/MERGE candidate is flagged as FAILURE 21 recurrence and blocks a clean retro. Prefer extend-existing over add-new; prefer merge-redundant over keep-parallel. NO retro without these THREE artifacts.
+21. **Micro-loop high-risk tasks at task boundary, not batch boundary.** (v9.7.1) During Phase 4A, for ANY task with id matching T_contract_*, the implementer MUST dispatch the thin reviewer (spec + sibling-signature only, NO cso/ast/field-mapping) immediately after self-verify. Max 2 refine cycles within the task. NEVER advance to next task in batch with an UNVERIFIED sibling-contract task. Field-mapping tasks (touches_field_mapping_boundary=true) are NOT micro-looped — they pass the DETERMINISTIC Phase 4A field-mapping gate (evidence-table consistency + grep spot-check) + the Phase 4B reviewer's independent cross-layer check. Maps to harness-design generator-evaluator pattern.
+22. **Layer ROI + per-layer harness assumption + complexity ratchet in every retro.** Phase 7 retro MUST populate the Layer ROI table (per-layer ran, caught_issue, effort_estimate, model_used), record a PER-LAYER falsifiable harness assumption, AND fill the Complexity Ratchet Ledger. After 3 cumulative runs, any layer with ran == true AND caught_issue == false across all 3 runs is surfaced as an ABLATION CANDIDATE. COMPLEXITY RATCHET (FAILURE 21 defense): the ledger records this run's net-layer delta; a release that added a mandatory layer/skill/rule WITHOUT naming a DROP/MERGE candidate is flagged as FAILURE 21 recurrence and blocks a clean retro. Prefer extend-existing over add-new; prefer merge-redundant over keep-parallel. NO retro without these THREE artifacts. (v9.7.1a) Layer ROI keys MUST match reference.md canonical ids VERBATIM — no retired/ad-hoc/omitted keys; and measurement is NON-COMPRESSIBLE: a lightweight/compressed run may compress creative phases but MUST still run Phase 6 audit + Phase 7 Layer ROI recording + retro append (skipping measurement silently breaks the ratchet). See reference.md §Layer ROI Tracking CANONICAL KEY DISCIPLINE. retro_saved:true is a DATA-PRESENCE claim — before setting it, VERIFY .qoder-autopilot-retro.md physically contains this run's entry (Phase 7 step 9); a true flag with no entry is a FALSE CLAIM (FAILURE 23) that silently breaks the 3-run trend.
 23. **Per-task model tier from planner.** (v9.6.1) For each implementer dispatch in Phase 4A, read `dag[task_id].recommended_model` (cheap/standard/premium) from plan_doc and route to the matching model. Missing field → default "standard" (back-compat). Auto-escalate: 2 consecutive failures on the same task → bump one tier (cheap→standard→premium) before next attempt; record `attempts[].model_used` in state.json so retro can compute cost-vs-quality ROI per tier.
 24. **Intent-injection propagation.** (v9.6.1) Phase 0 §6.5 produces `state.injected_skills[<agent>]` (human-confirmed). For EVERY Task() dispatch in Phases 1–5, the orchestrator MUST append an `Injected Skills (v9.6.1 intent-recognition):` block to the assignment, listing each injected skill + `why_match` reason. Agents MUST reciprocate by reporting `injection_used: [<skill_name>, ...]` in their output JSON (empty array if none were called). Phase 7 retro reads these to populate `state.layer_roi.intent_injection`. Missing injected_skills (e.g., legacy state) → fall back silently to agent baseline `skills:` list (back-compat). NEVER inject without the Phase 0 human gate; NEVER inject the same skill into >2 agent roles.
 25. **Data presence is a gate, not an assumption.** (v9.6.1) A valid status/gate/proofs block is NOT enough. Every phase's deliverable MUST be checked for empty-shell returns: research_brief with real findings, change_registry with actual files, reviewer sub-artifacts with real evidence, API payloads with at least one sample field, and frontend EMPTY/ERROR states for no-data scenarios. Empty-but-valid output = MALFORMED → retry protocol.

@@ -1,0 +1,10 @@
+{
+  "field_mapping_all_match": true,
+  "mismatch_count": 0,
+  "rows": [
+    {"row": "R1-honest",          "backend_field": "user_name",  "frontend_field": "userName",     "declared_conversion": "camelize", "contract_match": "YES", "backend_proof": "backend.py", "frontend_proof": "frontend.js"},
+    {"row": "R2-honest",          "backend_field": "created_at", "frontend_field": "createdAt",    "declared_conversion": "camelize", "contract_match": "YES", "backend_proof": "backend.py", "frontend_proof": "frontend.js"},
+    {"row": "R3-conversion-drop", "backend_field": "email_addr", "frontend_field": "emailAddr",    "declared_conversion": "camelize", "contract_match": "YES", "backend_proof": "backend.py", "frontend_proof": "frontend.js"},
+    {"row": "R4-wrong-token",     "backend_field": "email_addr", "frontend_field": "emailAddress", "declared_conversion": "camelize", "contract_match": "YES", "backend_proof": "backend.py", "frontend_proof": "frontend.js"}
+  ]
+}

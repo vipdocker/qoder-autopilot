@@ -1,4 +1,4 @@
-# Qoder Autopilot v9.7.0 — 安装指南
+# Qoder Autopilot v9.7.1 — 安装指南
 
 ## 概述
 
@@ -321,6 +321,11 @@ bash uninstall.sh
 
 ## v9.4 五层防御机制（FAILURE 14）
 
+> **⚠️ v9.7.1 已合并为 3 角色**（见版本历史 v9.7.1 行）：**CONTRACT**（L1 扫描 + L2 声明）、
+> **EVIDENCE**（L4 grep 证据表）、**GATE**（L5 确定性门 + 新增 file:line spot-check，与 L7 独立重建）。
+> 删除了冗余的 L6 micro-loop 字段 diff；L3 降为作者指引。下表保留 v9.4→v9.6.1 的历史 7 层
+> 视图供追溯；**当前生效的是 3 角色结构**，canonical layer_roi 21 → 19。
+
 | 层 | Agent / 阶段 | 职责 | 产物 |
 |----|-------------|------|------|
 | L1 | Researcher §4 | 扫描后端序列化（Pydantic alias / DRF source / Go struct json tags）+ 前端取数路径（fetch/axios/TS interface），识别命名约定与转换边界 | research_brief 中的 "API Field Naming Convention" 块 + JSON `has_api_naming_convention` |
@@ -332,7 +337,7 @@ bash uninstall.sh
 | L7 | Reviewer (Phase 4B) | Cross-Layer Field Mapping Check + 6 行严重度矩阵：无转换层失配=BLOCKER、缺字段=BLOCKER、命名漂移=HIGH、混用=MEDIUM、未消费=LOW；输出 `field_mapping_diff` 与 `field_mapping_consistency` | code_review_report 中的 Cross-Layer 段 + JSON |
 
 注：planner 与 finisher 不参与（DAG 调度无需关心字段名；finisher 的 E2E smoke 已被 L4 grep 自检 + L7 矩阵覆盖，避免重复）。
-L4→L6 构成"实现即验证"的闭环：implementer 自证 → orchestrator 机验 → micro-loop reviewer 复核；L7 是最终 batch 兜底。
+v9.7.1 后当前闭环 = CONTRACT（L1 扫描 + L2 声明）→ EVIDENCE（L4 grep 证据表）→ GATE（L5 确定性门 + file:line spot-check，与 L7 独立重建复核）；旧 L6 micro-loop 字段 diff 已删除、L3 降为作者指引。
 
 ---
 
@@ -384,6 +389,7 @@ v9.6.1 记录了 23 个从实际运行中发现的故障模式，每个都有对
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v9.7.1 | 2026-07-17 | **字段映射 7 层 → 3 角色（Complexity Ratchet 首次证据驱动裁层，[#6](https://github.com/vipdocker/qoder-autopilot/issues/6)）**。v9.7.0 Ledger 提名的首个 DROP/MERGE 候选落地——把 FAILURE 14 的 7 层防御合并为 3 角色：**CONTRACT**（researcher §4 扫描 + designer §2c 声明）、**EVIDENCE**（implementer §1e grep 证据表）、**GATE**（Phase 4A 确定性门 + 新增 file:line grep spot-check + 转换桥接检查(v9.7.1a)，与 Phase 4B reviewer 独立重建）。删除冗余的 micro-loop LLM 字段 diff（旧 L6）；4A.5 触发收窄为 `T_contract_*`；frontend-designer §2g 降为作者指引。canonical layer_roi **21 → 19（净 −2，首个负 delta）**；Global Rule 21 + FAILURE 14 改写；validate.sh Check 7 正则更新。两道独立门（确定性 4A + 独立 4B）仍守 FAILURE 14，删除无损。 |
 | v9.7.0 | 2026-07-16 | **Complexity Ratchet — 治理 harness 单调膨胀（[#6](https://github.com/vipdocker/qoder-autopilot/issues/6)）**。对齐 loop-engineering 经济学：harness 只能在**同一版本也提名"砍什么"**时才允许生长，否则判 FAILURE 21 复发。刻意以**扩展既有防线而非新增计数**落地——FAILURE 21 FIX 增补 COMPLEXITY RATCHET 条款；Global Rule 22 由"两件套"扩为"三件套"（Layer ROI + 逐层可证伪 harness 假设 + Complexity Ratchet Ledger）；Phase 7 新增 Complexity Ratchet Ledger（净层数 delta + 强制 DROP/MERGE 提名 + 自应用示范）与逐层可证伪假设表；`reference.md` 新增 §Complexity Ratchet（EXTEND>MERGE>ADD 优先级 + 冗余启发式）；state 模板 `harness_assumption` 升级为 `{global, per_layer}` 并新增 `complexity_ratchet` 字段。**净 failure/rule 计数 delta = 0**（walk-the-talk）。首个 DROP/MERGE 候选已提名：FAILURE 14 字段映射 L1–L7 共 7 层 → v9.7.1 合并至 ≤3（待 ablation 验证）。 |
 | v9.6.1 | 2026-07-06 | **契约漂移审计修复 + validate.sh 自校验（[#4](https://github.com/vipdocker/qoder-autopilot/issues/4)）**。审计发现 v9.6/v9.6.1 升级时 phase 文件（orchestrator 侧）与 agent 文件改动不同步——FAILURE 11/14 发生在 harness 自身。修复：（1）Phase 3B↔Reviewer 契约统一（mode=`ac_negotiation`、死引用 §1.5→Section N、JSON 统一为 ac_negotiation_verdict+findings、assignment 补 research_brief_path/acceptance_criteria）；（2）Phase 2 与 Designer §2c 矛盾消除（逐字段表指令→轻量声明）；（3）MALFORMED 判定 mode 化 + Section M/N 补 status/gate；（4）layer_roi 三套 schema 统一为 canonical ID（后扩展至 21+intent_injection）；（5）Phase 4A 同步 4-state 状态机路由 + 模型档位映射表（cheap/standard→Default、premium→Premium）；（6）designer/frontend-designer/planner 补强制 JSON 块，全部 7 agent 补 injection_used，Phase 1–5 全派发点补 Injected Skills 传播行；（7）全文件版本统一 9.6.1、implementer 章节序修正、Phase 6 技能数 12→13。<br><br>**新增 `validate.sh`（103 项检查）**：版本一致性 / mode 契约 / 章节锚点 / JSON 字段契约 / JSON 块+injection_used 覆盖 / layer_roi ID 双向比对 / agent 引用可解析 / 退役词汇封禁 / Rule 24 传播；接入 install.sh pre-flight，校验失败拒绝安装。首次运行即抓到人工评审遗漏的 planner JSON 块缺失，并在后续 rebase 中拦截到需求追溯特性新增的 7 个 layer ID 未同步 SKILL.md 状态模板的漂移。 |
 | v9.6.1 | 2026-06-28 | 新增 FAILURE 22：Agent/接口“返回了但无数据”——把数据存在性提升为独立门控。UNIVERSAL DISPATCH PROTOCOL 解析 JSON 后校验关键字段非空；Phase 1 校验 research_brief 有 actionable 发现；Phase 4 校验 implementer change_registry 非空；Implementer/Reviewer agent 增加 DATA PRESENCE 规则；Reviewer 跨层字段映射检查新增 Data Presence Check（后端须返回数据、前端须处理 EMPTY 状态）。Global Rules 22→25（+23 per-task model tier、+24 intent-injection propagation、+25 data presence gate）。<br><br>强化跨层字段映射一致性：Designer §2c 增加“代表性端点/字段对”要求，Implementer §1e Evidence Table 增加 endpoint + declared_conversion + contract_match 列 + `field_mapping_all_match` 字段，Phase 4A Orchestrator 机验 evidence table（不匹配则立即 corrective retry），micro-loop 与 Reviewer 输出结构化 `field_mapping_diff` JSON。<br><br>新增 FAILURE 23 + Global Rule 26：需求可追溯门控。Planner §2d 产出 requirements_traceability.matrix；Implementer 输出 covered_requirements；Phase 4A 聚合覆盖率并在 <95% 或 MUST 缺失时 corrective replan；Phase 5B verifier 独立 RTV，差异 >5% 触发 auto-fix loop（最多 2 轮）。 |

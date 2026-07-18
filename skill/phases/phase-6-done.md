@@ -1,4 +1,4 @@
-<!-- version: 9.7.0 -->
+<!-- version: 9.7.1 -->
 # Phase 6: DONE — Completion Report + Mandatory Self-Audit
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
@@ -117,7 +117,7 @@ Verify each v9.6 layer ran or was correctly skipped, with concrete state-file ev
 | 7 | Requirements Traceability Matrix produced | ALWAYS             | YES/NO    | state.requirements_traceability.matrix exists with req_ids |
 | 8 | Requirements Coverage Gate passed         | ALWAYS             | YES/NO    | state.requirements_coverage.gate == "PASS" (ratio ≥ 0.95) |
 | 9 | Phase 5B RTV ran                          | ALWAYS             | YES/NO    | state.verification_result.requirements_traceability.verdict exists |
-| 10 | Layer ROI telemetry populated             | ALWAYS             | YES/NO    | state.layer_roi has entries for all canonical layer IDs |
+| 10 | Layer ROI telemetry canonical            | ALWAYS             | YES/NO    | state.layer_roi keys == reference.md canonical ids VERBATIM (no RETIRED phase4a_field_mapping_gate / phase2a_field_mapping_contract / phase1_api_field_naming; no ad-hoc e.g. phase4b_batch_review; none omitted). Compressed/lightweight run is NOT exempt. |
 | 11 | Harness Assumption Snapshot recorded      | ALWAYS             | YES/NO    | state.harness_assumption populated (model, reasoning_mode, …) |
 | 12 | Ablation run executed (if scheduled)     | IF state.ablation_run.disabled_layer | YES/N/A | state.ablation_run.result = "SUCCESS|REVERTED" |
 ```

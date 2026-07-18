@@ -1,4 +1,4 @@
-<!-- version: 9.7.0 -->
+<!-- version: 9.7.1 -->
 # Phase 4: EXECUTE + REVIEW
 
 **THREE mandatory parts per batch in v9.6: 4A (implement) → 4A.5 (conditional micro-loop) → 4B (batch review).**
@@ -56,19 +56,36 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
     5. VERIFY (v9.6): IF touches_field_mapping_boundary=true → report MUST contain
        field_mapping_evidence_table (grep-anchored). Missing → re-dispatch ONCE with
        explicit instruction to produce it.
-    6. VERIFY (FIELD MAPPING CORRECTNESS — FAILURE 14/22 guard):
+    6. VERIFY (FIELD MAPPING CORRECTNESS — DETERMINISTIC GATE, FAILURE 14/22 guard):
+       v9.7.1: this is the PRIMARY task-boundary field-mapping gate (it replaces the removed
+       micro-loop LLM diff). It is DETERMINISTIC — no LLM — and runs on EVERY task carrying a
+       field_mapping_evidence_table.
        IF report contains field_mapping_evidence_table:
-         • EVERY row MUST have contract_match="YES" (or matches_contract=true)
-         • field_mapping_all_match MUST be true
-         • mismatch_count MUST be 0
-       IF any mismatch found:
+         a. CONSISTENCY: EVERY row MUST have contract_match="YES" (or matches_contract=true),
+            field_mapping_all_match MUST be true, mismatch_count MUST be 0.
+         b. EVIDENCE SPOT-CHECK (v9.7.1 — catches fabricated / mistaken evidence rows,
+            the sub-class the removed micro-loop used to catch). Two deterministic sub-checks:
+            b1. TOKEN PRESENCE: each row's grep proof is "file:line". Read it (or grep the file)
+                and confirm the claimed backend_field / frontend_field token ACTUALLY appears
+                there. A proof that does not contain the claimed token = evidence-integrity
+                failure → mismatch. (Catches typo'd / wrong field names.)
+            b2. CONVERSION BRIDGE (v9.7.1a — closes the seeded-defect probe gap): IF a row's
+                declared_conversion is a TRANSFORM (not "passthrough"/"none"), grep the declared
+                conversion-boundary file and confirm the converter ACTUALLY maps this
+                backend_field → frontend_field. A declared transform whose converter does not
+                handle the field silently DROPS it → runtime undefined, even though BOTH tokens
+                still exist in their own files (b1 alone cannot catch this) → mismatch.
+       IF any mismatch OR any failed spot-check:
          → DO NOT mark task done. Classify as CODE failure.
          → Re-dispatch implementer ONCE with corrective instruction:
-           "Field Mapping Contract violation detected in your evidence table:
-            {list mismatched rows}. Fix the implementation so every cross-boundary
-            field honors the design doc contract, then re-run §1e and report
+           "Field Mapping Contract violation / evidence-integrity failure detected:
+            {list mismatched or unverifiable rows}. Fix the implementation (or correct the grep
+            proof) so every cross-boundary field honors the design doc contract AND every row's
+            file:line actually contains the claimed field; re-run §1e and report
             field_mapping_all_match=true with zero mismatches."
-         → If still mismatch after corrective retry → mark BLOCKED and surface to user.
+         → If still failing after corrective retry → mark BLOCKED and surface to user.
+       Record state.layer_roi.field_mapping_gate (ran=true; caught_issue=true if any
+       mismatch / spot-check failure).
     7. Update state: dag[id].status, dag[id].proofs, change_registry[id],
        dag[id].touches_field_mapping_boundary
        → IF frontend_aesthetics == APPLIED: skills_invoked += [frontend-design]
@@ -83,10 +100,13 @@ Mirrors Anthropic harness-design generator-evaluator loop *inside* a task bounda
 at batch boundary. Prevents Failure 19 (cross-layer cascade within batch).**
 
 AGENT: `engineering-autopilot-reviewer.md` (THIN MODE — see agent "Section M — THIN MODE (Micro-Loop, Phase 4A.5)")
-TRIGGERS (any of):
+TRIGGER (v9.7.1 — narrowed to sibling-contract tasks ONLY):
   - task.id matches `T_contract_*`
-  - task.touches_field_mapping_boundary == true
-  - task touches BOTH backend serializer AND frontend consumer files (cross-layer)
+  ⛔ Field-mapping / cross-layer tasks (touches_field_mapping_boundary=true) NO LONGER
+     trigger the micro-loop. They are covered by the DETERMINISTIC field-mapping gate
+     (Phase 4A step 6 above: evidence-table consistency + grep spot-check) plus the Phase 4B
+     reviewer's independent Cross-Layer Field Mapping Check. The micro-loop now guards ONLY
+     spec + sibling contract.
 LIMIT: max 2 refine cycles per task. Counts against `state.dag[id].micro_loop_attempts`.
 
 ```
@@ -99,17 +119,13 @@ LIMIT: max 2 refine cycles per task. Counts against `state.dag[id].micro_loop_at
            task_id,
            change_registry_for_task: { files added/modified BY THIS TASK ONLY },
            design_doc_path,
-           research_brief_path,  // for Baseline Signature + API Field Naming blocks
+           research_brief_path,  // for Baseline Signature block
            project_path
          }
-         THIN MODE skill scope: ONLY runs (a) Spec-compliance for this task's AC,
-         (b) Field Mapping Contract diff (research_brief naming convention + design doc
-         contract vs implementer's field_mapping_evidence_table; produce field_mapping_diff
-         JSON with mismatched fields, severity, and concrete fix), (c) Sibling signature
-         consistency for the new symbol.
-         SKIPS: full ast scan, security audit, deployment-chain audit (those run in 4B).
-         ⛔ If micro-loop finds ANY field_mapping_diff.mismatched > 0 → verdict MUST be
-           REFINE_REQUIRED (or FAIL if unfixable). Do NOT let mismatched field names pass.
+         THIN MODE skill scope (v9.7.1): ONLY runs (a) Spec-compliance for this task's AC,
+         (b) Sibling signature consistency for the new symbol.
+         SKIPS: field-mapping (now the DETERMINISTIC step-6 gate + 4B reviewer), full ast
+         scan, security audit, deployment-chain audit (those run in 4B).
       2. CHECK micro_loop_verdict: PASS / REFINE_REQUIRED / FAIL
          → PASS: break loop, record state.dag[id].micro_loop_result = "PASS@cycle{n}"
          → REFINE_REQUIRED: re-dispatch implementer for THIS task ONLY with the
@@ -190,9 +206,12 @@ END FOR (next batch)
 ```
 CHECK: state.json.batch_reviews is NOT empty
 IF empty → YOU SKIPPED PHASE 4B. Go back and dispatch reviewer NOW.
-CHECK (v9.6): every task with touches_field_mapping_boundary=true OR id matching
-  T_contract_* has state.dag[id].micro_loop.triggered == true.
-IF not → YOU SKIPPED 4A.5 ON A QUALIFYING TASK. Go back and run the micro-loop for it.
+CHECK (v9.7.1): every task with id matching T_contract_* has
+  state.dag[id].micro_loop.triggered == true.
+IF not → YOU SKIPPED 4A.5 ON A QUALIFYING (sibling-contract) TASK. Go back and run it.
+CHECK (v9.7.1): every task with touches_field_mapping_boundary=true passed the
+  DETERMINISTIC field-mapping gate (step 6: evidence-table consistency + grep spot-check).
+IF not → the field-mapping gate was skipped; go back and run step 6 for it.
 
 CHECK (v9.6.1): REQUIREMENTS COVERAGE GATE (pre-Phase 5 early-catch):
   1. From planner output: requirements_traceability.matrix (list of req_ids)

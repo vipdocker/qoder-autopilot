@@ -1,5 +1,5 @@
 #!/bin/bash
-# Qoder Autopilot v9.7.0 — Install Script
+# Qoder Autopilot v9.7.1 — Install Script
 # Usage: bash install.sh
 
 set -e
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}Qoder Autopilot v9.7.0 — Installing...${NC}"
+echo -e "${CYAN}Qoder Autopilot v9.7.1 — Installing...${NC}"
 echo ""
 
 # ─── Pre-flight checks ───
@@ -183,6 +183,13 @@ if [ "$ERRORS" -eq 0 ]; then
   echo "  - Phase 7 Complexity Ratchet Ledger (net-layer delta + forced DROP/MERGE proposal) + per-layer falsifiable harness assumption table"
   echo "  - reference.md §Complexity Ratchet: EXTEND > MERGE > ADD preference order + redundancy heuristic"
   echo "  - First DROP/MERGE candidate named: FAILURE 14 field-mapping 7 layers → merge to ≤3 in v9.7.1 (ablation-validated)"
+  echo ""
+  echo -e "${CYAN}v9.7.1 (Complexity Ratchet's FIRST real cut — field mapping 7 layers → 3 roles):${NC}"
+  echo "  - FAILURE 14 defense merged to 3 roles: CONTRACT (scan+declare) / EVIDENCE (grep table) / GATE (deterministic 4A + independent 4B)"
+  echo "  - Removed the redundant micro-loop LLM field diff (old L6); added a deterministic file:line grep spot-check inside the 4A gate (lossless)"
+  echo "  - 4A.5 micro-loop trigger narrowed to T_contract_*; frontend-designer §2g demoted to authoring guidance"
+  echo "  - canonical layer_roi 21 → 19 (net −2, first NEGATIVE delta — the ratchet demonstrably works)"
+  echo "  - Two independent gates remain (deterministic 4A + independent 4B) — FAILURE 14 stays defended"
 else
   echo -e "${RED}Installation finished with errors. Check output above.${NC}"
   exit 1
