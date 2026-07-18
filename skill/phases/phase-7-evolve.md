@@ -42,7 +42,19 @@
 6.5 COMPLEXITY RATCHET GATE (v9.7 — MANDATORY): fill the Complexity Ratchet Ledger.
     A release that grew the harness without naming a cut candidate = FAILURE 21 recurrence.
 7. HUMAN GATE: Present proposals, apply on approval
-8. Write PERSISTENT MEMORY to .qoder-autopilot-retro.md (project root)
+8. Write PERSISTENT MEMORY to .qoder-autopilot-retro.md (project root) — APPEND this run's
+   entry; NEVER overwrite prior entries.
+9. ⛔ VERIFY THE APPEND (v9.7.1a — data-presence on the retro itself; FAILURE 22/23 guard):
+   After writing, RE-READ .qoder-autopilot-retro.md and confirm it now PHYSICALLY contains
+   THIS run's entry — grep for the feature name / run date AND this run's Layer ROI table.
+     • Found → set state.retro_saved = true.
+     • NOT found (write silently failed / wrong path / append skipped) → retry the append
+       ONCE; if still missing, set retro_saved = false and surface "retro append FAILED" at
+       the human gate. Do NOT advance to a clean DONE.
+   ⛔ NEVER set retro_saved = true without confirming the entry is in the file. A true flag
+     with no entry is a FALSE CLAIM (FAILURE 23) — it silently breaks the ratchet's 3-run
+     trend, which aggregates prior retro files. (Observed: run #3 set retro_saved:true but
+     appended nothing; the retro's last entry was still run #2.)
 ```
 
 ## Retro File Format (append-only, timestamped)
