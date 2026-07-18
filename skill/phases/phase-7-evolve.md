@@ -189,6 +189,13 @@ Do not auto-remove.
 Source: aggregate per-phase proofs and state telemetry. A layer is "Run" if its
 state field is populated AND non-empty for the run.
 
+⛔ TELEMETRY-DRIFT FALLBACK (v9.7.1a): if state.layer_roi is drifted (retired / ad-hoc /
+omitted keys — see reference.md §Layer ROI Tracking) or absent (e.g. a compressed run skipped
+Phase 7 recording), DO NOT silently drop the trend. DERIVE each layer's ran / caught_issue from
+sub-artifacts — dag[*].proof + .qoder-autopilot/reviews/** — map them onto the CANONICAL ids,
+AND tag the run "telemetry-drift; ROI reconstructed" in the retro so the drift is visible and
+gets fixed, not hidden.
+
 ### Intent Injection ROI (v9.6.1 — MANDATORY when Phase 0 §6.5 produced injections)
 
 **Purpose**: close the loop on Phase 0 intent-recognition. Every injected skill is

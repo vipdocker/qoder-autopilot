@@ -325,6 +325,22 @@ WHEN TO RECORD:
   - At the end of each phase, update the relevant layer_roi entry.
   - Don't try to compute the verdict (KEEP/SHRINK/DROP) — Phase 7 retro does that.
 
+CANONICAL KEY DISCIPLINE + NON-COMPRESSIBLE MEASUREMENT (v9.7.1a — telemetry-drift guard):
+  The multi-run Layer ROI trend is the ratchet's ONLY cut-decision evidence — worthless if
+  keys drift or a run skips recording. Therefore:
+  1. KEYS: state.layer_roi keys MUST be EXACTLY the canonical ids above, verbatim.
+     ⛔ NEVER use a RETIRED id: phase4a_field_mapping_gate → field_mapping_gate;
+        phase1_api_field_naming / phase2a_field_mapping_contract → field_mapping_contract.
+     ⛔ NEVER invent ad-hoc ids (e.g. phase4b_batch_review is NOT canonical — use the
+        specific phase4b_* skill ids).
+     ⛔ NEVER omit a layer that ran. ran:true iff the layer's phase/skill executed (a gate
+        that produced an evidence table or verdict is ran:true even if caught_issue=false).
+  2. NON-COMPRESSIBLE: a "lightweight"/"compressed" run may compress the CREATIVE phases
+     (intake/research/design depth) but MUST STILL run Phase 6 audit + Phase 7 Layer ROI
+     recording + retro append. Skipping measurement is NOT a valid compression — it silently
+     breaks the ratchet. (Observed: a compressed run left a stub layer_roi under a retired id
+     and never appended a retro entry → two v9.7.1 runs produced ZERO trend data.)
+
 AGGREGATION (Phase 7):
   - Read state.layer_roi from this run + last 2 retro files (.qoder-autopilot-retro.md
     parses prior layer_roi tables).
