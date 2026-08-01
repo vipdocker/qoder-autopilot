@@ -1,0 +1,138 @@
+{
+  "canvas": {
+    "width": 1210,
+    "height": 1138,
+    "fps": 20,
+    "frames": 41
+  },
+  "signature": "@岚叔",
+  "title": {
+    "prefix": "The internals of",
+    "highlight": "Qoder Autopilot",
+    "subtitle": "v9.7.1 多 Agent 自动开发流水线 — 需求到发布的 8 阶段编排"
+  },
+  "input_title": "Source / Input",
+  "inputs": [
+    {
+      "label": "需求",
+      "icon": "file",
+      "color": "#7ee3d6"
+    },
+    {
+      "label": "代码库",
+      "icon": "folder",
+      "color": "#ff7ab6"
+    },
+    {
+      "label": "gbrain",
+      "icon": "folder",
+      "color": "#f4b64e"
+    },
+    {
+      "label": "Web",
+      "icon": "file",
+      "color": "#bd54d3"
+    }
+  ],
+  "core": {
+    "title": "Autopilot Core",
+    "subtitle": "(编排器只派单，不写码)",
+    "cards": [
+      {
+        "title": "研究 · 设计",
+        "body": "P0–P2 同族基线扫描\nBrief + 设计文档",
+        "icon": "scan"
+      },
+      {
+        "title": "规划 · 协商",
+        "body": "P3–P3B DAG 依赖\nAC 可验证性门控",
+        "icon": "file"
+      },
+      {
+        "title": "执行 · 评审",
+        "body": "P4A 实现+自检\nP4B 四技能评审",
+        "icon": "shield"
+      }
+    ]
+  },
+  "decision": {
+    "title": "可发布?",
+    "body": "评审全绿\n覆盖 ≥95%"
+  },
+  "output": {
+    "label": "发布",
+    "icon": "file"
+  },
+  "loop_label": "重试协议 · 分类 → 退避×3 → 纠正×2 → 收缩×1 → BLOCKED",
+  "retry_label": "No · 门控 FAIL / 契约失配",
+  "left_panel": {
+    "title": "7 个 Agent",
+    "badge": "分层模型",
+    "cards": [
+      {
+        "title": "研究 / 设计",
+        "body": "researcher · designer\nfrontend-designer",
+        "icon": "scan"
+      },
+      {
+        "title": "规划 / 实现",
+        "body": "planner · implementer\n按批次并行 ×N",
+        "icon": "folder"
+      },
+      {
+        "title": "评审 / 收尾",
+        "body": "reviewer · finisher",
+        "icon": "file"
+      }
+    ]
+  },
+  "center_panel": {
+    "title": "防御门控层",
+    "subtitle": "(23 类已知故障 → 可证伪的层)",
+    "footer": "Complexity Ratchet",
+    "cards": [
+      {
+        "title": "同族契约",
+        "body": "基线签名表\n失配=BLOCKER",
+        "icon": "hash"
+      },
+      {
+        "title": "字段映射",
+        "body": "3 角色\ngrep 证据表",
+        "icon": "file"
+      },
+      {
+        "title": "安全审计",
+        "body": "/cso\nOWASP",
+        "icon": "shield"
+      },
+      {
+        "title": "需求追溯",
+        "body": "RTV 矩阵\n≥95% 覆盖",
+        "icon": "db"
+      }
+    ]
+  },
+  "right_panel": {
+    "title": "产物 / State",
+    "incoming_label": "落盘",
+    "return_label": "复用",
+    "cards": [
+      {
+        "title": "state.json",
+        "body": "DAG · 锁 · 产物路径\n断点可恢复",
+        "icon": "db"
+      },
+      {
+        "title": "评审子产物",
+        "body": "reviews/{batch}/\n{skill}.md",
+        "icon": "file"
+      },
+      {
+        "title": "Retro + ROI",
+        "body": "layer_roi · /health\n三轮趋势砍层",
+        "icon": "package"
+      }
+    ]
+  }
+}

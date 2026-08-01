@@ -16,6 +16,10 @@ Qoder Autopilot 是一个多 Agent 编排技能，驱动完整的 superpowers �
 
 ### 架构
 
+![Qoder Autopilot v9.7.1 流水线动画流程图](docs/qoder-autopilot-pipeline.gif)
+
+> 静态版 [PNG](docs/qoder-autopilot-pipeline.png) · 可编辑源文件 [Excalidraw](docs/qoder-autopilot-pipeline.excalidraw) · 渲染 spec [JSON](docs/autopilot-pipeline-spec.json)
+
 ```
 编排器 (SKILL.md 精简脊柱, 在主会话运行)
 │
