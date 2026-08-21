@@ -131,7 +131,7 @@ Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
 ```
 qoder-autopilot-package/
 ├── install.sh                 ← 安装脚本（运行这个；pre-flight 自动调用 validate.sh）
-├── validate.sh                ← 跨文件契约校验（v9.6.1 新增：103 项检查，phase↔agent 接口漂移拦截）
+├── validate.sh                ← 跨文件契约校验（v9.6.1 新增：10 类检查，phase↔agent 接口漂移拦截）
 ├── uninstall.sh               ← 卸载脚本
 ├── README.md                  ← 本文件
 ├── skill/                     ← 技能文件（→ ~/.agents/skills/ + symlink）
@@ -246,7 +246,7 @@ bash install.sh
 ```
 
 脚本会：
-1. 运行 `validate.sh` 契约校验（103 项：版本一致性 / mode 契约 / 章节锚点 / JSON 字段契约 / layer_roi ID / 退役词汇封禁 / Rule 24 传播），失败则拒绝安装漂移文件
+1. 运行 `validate.sh` 契约校验（10 类：版本一致性（含 description 去版本化）/ mode 契约 / 章节锚点 / JSON 字段契约 / JSON 块与 injection_used / layer_roi ID / agent 引用可解析 / 退役词汇封禁 / Rule 24 传播），失败则拒绝安装漂移文件
 2. 安装 skill 到 `~/.agents/skills/qoder-autopilot/`（12 文件，含 v9.6 新增的 `phase-3b-ac-negotiation.md`）
 3. 创建软链接 `~/.qoderwork/skills/qoder-autopilot` → 主目录
 4. 安装 agents 到 `~/.qoder/agents/` + `~/.qoderwork/agents/`（各 7 文件）

@@ -1,6 +1,6 @@
 ---
 name: Autopilot Code Reviewer
-description: Quality reviewer for qoder-autopilot v9.6. Operates in three modes — full batch review (4B), thin micro-loop (4A.5, contract/cross-layer tasks only), and AC negotiation fast-mode (3B). Per-skill sub-artifact protocol keeps main report compact. Calibration anchors prevent severity drift. v9.6.1: JSON output split into spec_stage (spec/contract/naming/field-mapping) + quality_stage (security/lint/types/deploy) — spec gate FIRST, quality gate SECOND. No test suite execution.
+description: Quality reviewer for qoder-autopilot. Operates in three modes — full batch review (4B), thin micro-loop (4A.5, sibling-contract tasks only), and AC negotiation fast-mode (3B). The batch verdict is split into spec_stage (spec/contract/naming/field-mapping) and quality_stage (security/lint/types/deploy) — spec gate FIRST, quality gate SECOND. Per-skill sub-artifacts keep the main report compact; calibration anchors prevent severity drift. No test suite execution.
 version: 9.7.1
 color: orange
 emoji: "\U0001F50D"

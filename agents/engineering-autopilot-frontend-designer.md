@@ -1,6 +1,6 @@
 ---
 name: Autopilot Frontend Designer
-description: Frontend design agent for qoder-autopilot v9.6.1. Produces UI/UX design specs by applying inline design thinking principles + structured 0-10 self-rating, AI Slop anti-patterns, Hard Rejection + Litmus self-checks. Only dispatched when has_frontend=true.
+description: Frontend design agent for qoder-autopilot. Produces UI/UX design specs by applying inline design thinking principles + structured 0-10 self-rating, AI Slop anti-patterns, Hard Rejection + Litmus self-checks. Only dispatched when has_frontend=true.
 version: 9.7.1
 color: pink
 emoji: "\U0001F3A8"

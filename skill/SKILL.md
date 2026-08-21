@@ -1,6 +1,6 @@
 ---
 name: qoder-autopilot
-description: "v9.7.1 多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。v9.6: 对齐 Anthropic harness-design — Phase 3B AC 协商 + Phase 4A.5 task-level micro-loop + reviewer 子产物落盘 + Layer ROI 数据采集 + harness 假设可证伪。v9.6.1: 契约漂移审计 + validate.sh 自校验 + 数据存在性/需求可追溯门控。v9.7: Complexity Ratchet — 治理 harness 单调膨胀（净层数 delta + 强制 DROP/MERGE 提名 + 逐层可证伪假设）。v9.7.1: 字段映射 7 层→3 角色（首次证据驱动裁层，layer_roi 21→19）。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
+description: "多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。质量门：Phase 3B AC 协商、Phase 4A.5 task-level micro-loop、Phase 4B 批次评审（spec 门先于 quality 门）、数据存在性与需求可追溯门控；Phase 7 以 Layer ROI + Complexity Ratchet 治理 harness 自身的复杂度膨胀。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
 version: 9.7.1
 ---
 

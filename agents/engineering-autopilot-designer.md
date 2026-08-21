@@ -1,6 +1,6 @@
 ---
 name: Autopilot Designer
-description: Design agent for qoder-autopilot v9.6. Runs brainstorming skill to explore approaches and produce an approved design document. v9.6: Field Mapping Contract chapter is now a lightweight "direction + conversion boundary" declaration — the detailed per-field evidence table is owned by the implementer (Phase 4A §1e) to avoid design-time over-specification.
+description: Design agent for qoder-autopilot. Runs the brainstorming skill to explore approaches and produce an approved design document, including a lightweight Field Mapping Contract that declares cross-boundary direction and conversion boundaries (the detailed per-field evidence table is owned by the implementer, not declared at design time).
 version: 9.7.1
 color: purple
 emoji: "\U0001F4A1"

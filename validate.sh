@@ -10,6 +10,7 @@
 #
 # Checks:
 #   1. Version consistency  — SKILL.md canonical version == all phases/agents/docs
+#      (+ skill/agent descriptions must be version-FREE: `version:` is the single source)
 #   2. Mode contract        — every mode dispatched by phases exists in reviewer
 #   3. Section anchors      — cross-file section references actually exist
 #   4. JSON field contract  — fields the orchestrator parses exist in agent output contracts
@@ -97,10 +98,23 @@ check_banner() {
   fi
 }
 check_banner "$SKILL_SRC/SKILL.md"      "# Qoder Autopilot v$CANON" "SKILL.md H1"
-check_banner "$SKILL_SRC/SKILL.md"      "description: \"v$CANON"   "SKILL.md description"
 check_banner "$SCRIPT_DIR/README.md"    "# Qoder Autopilot v$CANON" "README.md H1"
 check_banner "$SCRIPT_DIR/install.sh"   "Qoder Autopilot v$CANON"   "install.sh"
 check_banner "$SCRIPT_DIR/uninstall.sh" "Qoder Autopilot v$CANON"   "uninstall.sh"
+
+# Descriptions must be version-FREE capability statements: `version:` is the single source of
+# truth and README owns the changelog. A version token in a description either duplicates
+# `version:` and silently rots (v9.6/v9.6.1 descriptions once shipped on version: 9.7.1
+# agents), or turns the description into an append-only changelog that grows every release.
+for f in "$SKILL_SRC/SKILL.md" "$AGENT_SRC"/engineering-autopilot-*.md; do
+  DESC=$(grep -m1 '^description:' "$f")
+  if echo "$DESC" | grep -qE 'v[0-9]+\.[0-9]+'; then
+    fail "$(basename "$f") description carries a version token (must be version-free; version: field is canonical):"
+    echo "$DESC" | grep -oE 'v[0-9]+\.[0-9]+(\.[0-9]+)?' | sort -u | sed 's/^/         /'
+  else
+    pass "$(basename "$f") description is version-free"
+  fi
+done
 
 # README version-history table must contain a row for the canonical version
 if grep -qE "^\| v$CANON " "$SCRIPT_DIR/README.md"; then
