@@ -20,3 +20,6 @@ Desktop.ini
 
 # Distributable plugin archives (published as GitHub Release assets, not committed)
 dist/*.zip
+.qmind-work/
+.qmind-diagram/
+outputs/
