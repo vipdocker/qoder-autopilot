@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase Exit Self-Check Protocol
 
 ## When to Use

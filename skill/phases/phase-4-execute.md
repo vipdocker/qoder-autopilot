@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase 4: EXECUTE + REVIEW
 
 **THREE mandatory parts per batch in v9.6: 4A (implement) → 4A.5 (conditional micro-loop) → 4B (batch review).**
@@ -16,7 +16,7 @@ ASSIGNMENT per task: task ID, description, estimated files, dependencies, plan_d
 ```
   FOR each READY task (parallel where DAG allows):
     1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-       Agent file: ~/.qoder/agents/engineering-autopilot-implementer.md
+       Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-implementer.md
        Assignment: { task_id, description, estimated_files, dependencies, plan_doc_path,
                      frontend_spec_path (if has_frontend, else omit), project_path,
                      touches_field_mapping_boundary: bool  // v9.6: derived from plan_doc
@@ -155,7 +155,7 @@ ASSIGNMENT: task IDs in batch, change_registry for batch tasks, design doc path,
 
 ```
     1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-       Agent file: ~/.qoder/agents/engineering-autopilot-reviewer.md
+       Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-reviewer.md
        Assignment: { mode: "batch_full", task_ids, change_registry_for_batch,
                      design_doc_path, frontend_spec_path (if has_frontend, else omit),
                      project_path, micro_loop_summary (from 4A.5),

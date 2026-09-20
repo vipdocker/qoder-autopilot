@@ -1,4 +1,4 @@
-# Qoder Autopilot v9.7.1 — 安装指南
+# Qoder Autopilot v9.7.2 — 安装指南
 
 ## 概述
 
@@ -82,11 +82,11 @@ Qoder Autopilot 是一个多 Agent 编排技能，驱动完整的 superpowers �
 ### 安装路径
 
 ```
-Skill (主目录):  ~/.agents/skills/qoder-autopilot/     (12 files, v9.6 新增 phase-3b-ac-negotiation.md)
-Skill (软链接): ~/.qoderwork/skills/qoder-autopilot → 主目录
-Agents:         ~/.qoder/agents/                       (7 files)
-Agents (镜像):  ~/.qoderwork/agents/                   (7 files)
+Skill:   ~/.agents/skills/qoder-autopilot/         (12 files, v9.6 新增 phase-3b-ac-negotiation.md)
+Agents:  ~/.qoder/agents/qoder-autopilot/          (7 files)
 ```
+
+> 布局说明：skills 统一落在 `~/.agents/skills/`，agents 统一落在 `~/.qoder/agents/qoder-autopilot/` 子目录（不再装进 agents 根目录）。旧版写入 `~/.qoderwork/` 的镜像/软链会在安装时自动清理。
 
 ### 13 个必选技能
 
@@ -134,7 +134,7 @@ qoder-autopilot-package/
 ├── validate.sh                ← 跨文件契约校验（v9.6.1 新增：10 类检查，phase↔agent 接口漂移拦截）
 ├── uninstall.sh               ← 卸载脚本
 ├── README.md                  ← 本文件
-├── skill/                     ← 技能文件（→ ~/.agents/skills/ + symlink）
+├── skill/                     ← 技能文件（→ ~/.agents/skills/qoder-autopilot/）
 │   ├── SKILL.md               ← v9.6 编排器精简脊柱（主入口；新增 FAILURE 18-22 + Global Rules 20-25 + Phase 3B/4A.5 调度）
 │   ├── reference.md           ← 质量门、错误分类、契约一致性、资源限制；v9.6 新增 Calibration Anchors / Layer ROI / Ablation Protocol
 │   ├── self-check-protocol.md ← 阶段退出验证协议
@@ -148,7 +148,7 @@ qoder-autopilot-package/
 │       ├── phase-5-finish.md         ← v9.3: Sibling Consistency Check
 │       ├── phase-6-done.md           ← v9.6: 新增 Checklist E（9 行）覆盖 3B/4A.5/sub-artifact/ROI/snapshot/ablation
 │       └── phase-7-evolve.md         ← v9.3: 两张强制复盘表格；v9.6 新增 5 段（AC summary / micro-loop summary / Layer ROI table / Harness Assumption Snapshot / Ablation Run）
-└── agents/                    ← Agent 文件（→ ~/.qoder/agents/ + ~/.qoderwork/agents/）
+└── agents/                    ← Agent 文件（→ ~/.qoder/agents/qoder-autopilot/）
     ├── engineering-autopilot-researcher.md         ← v9.3 Mode B + v9.4 §4 API naming scan
     ├── engineering-autopilot-designer.md           ← v9.4 §2c → v9.6 §2c 重写为方向声明（≤12 行，禁止 per-field 表）
     ├── engineering-autopilot-frontend-designer.md  ← v9.4 §2b Honor Field Mapping Contract（v9.6 calibration anchors）
@@ -216,10 +216,10 @@ cd gstack && bash install.sh        # 或按其 README 指引
 ls ~/.claude/skills/brainstorming ~/.claude/skills/frontend-design \
    ~/.claude/skills/writing-plans ~/.claude/skills/finishing-a-development-branch \
    ~/.claude/skills/ast-code-analysis-superpower
-# 或对应的 ~/.agents/skills/、~/.qoderwork/skills/ 路径
+# 或对应的 ~/.agents/skills/、~/.qoder/skills/ 路径
 ```
 
-> **平台兼容性说明**：本 skill 支持 Claude Code、Qoder、QoderWork 三种宿主。安装路径会自动同步到 `~/.claude/skills/`、`~/.agents/skills/`、`~/.qoderwork/skills/`（详见下文 [安装路径](#安装路径)）。superpowers 与 gstack 的 skill 也需要确保在对应宿主可见。
+> **平台兼容性说明**：本 skill 的运行时路径按 Qoder 宿主设计（skill 读自 `~/.agents/skills/`，agents 装在 `~/.qoder/agents/qoder-autopilot/`，详见上文 [安装路径](#安装路径)）。Claude Code 用户可将 `skill/` 目录复制到 `~/.claude/skills/qoder-autopilot/`。superpowers 与 gstack 的 skill 也需要确保在对应宿主可见。
 
 ---
 
@@ -248,10 +248,9 @@ bash install.sh
 脚本会：
 1. 运行 `validate.sh` 契约校验（10 类：版本一致性（含 description 去版本化）/ mode 契约 / 章节锚点 / JSON 字段契约 / JSON 块与 injection_used / layer_roi ID / agent 引用可解析 / 退役词汇封禁 / Rule 24 传播），失败则拒绝安装漂移文件
 2. 安装 skill 到 `~/.agents/skills/qoder-autopilot/`（12 文件，含 v9.6 新增的 `phase-3b-ac-negotiation.md`）
-3. 创建软链接 `~/.qoderwork/skills/qoder-autopilot` → 主目录
-4. 安装 agents 到 `~/.qoder/agents/` + `~/.qoderwork/agents/`（各 7 文件）
-5. 自动清理旧版遗留（validator agent、~/.qoder/skills/ 旧路径）
-6. 验证文件数量
+3. 安装 agents 到 `~/.qoder/agents/qoder-autopilot/`（7 文件，子目录，不占 agents 根目录）
+4. 自动清理旧版遗留（validator agent、agents 根目录旧副本、`~/.qoder/skills/` 与 `~/.qoderwork/` 旧路径/软链）
+5. 验证文件数量
 
 ### 卸载
 
@@ -393,6 +392,7 @@ v9.6.1 记录了 23 个从实际运行中发现的故障模式，每个都有对
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
+| v9.7.2 | 2026-09-11 | **安装布局统一（agents 子目录 + skills 收敛到 `~/.agents`）**。agents 不再安装到 `~/.qoder/agents/` 根目录，统一装入 `~/.qoder/agents/qoder-autopilot/` 子目录；skills 不再创建 `~/.qoderwork/skills` 软链、不再镜像 `~/.qoderwork/agents`（`.qoderwork` 为迁移前旧配置目录，Qoder 当前仅读 `~/.qoder`）。SKILL.md UNIVERSAL DISPATCH PROTOCOL 与 8 个 phase 文件共 10 处 agent 文件路径同步（`Read("~/.qoder/agents/qoder-autopilot/…")`）；install.sh / uninstall.sh 覆盖新旧布局自动清理（agents 根级旧副本、`.qoderwork` 镜像与软链、validator 残留）。运行时协议零变化——纯安装/分发层调整。 |
 | v9.7.1 | 2026-07-17 | **字段映射 7 层 → 3 角色（Complexity Ratchet 首次证据驱动裁层，[#6](https://github.com/vipdocker/qoder-autopilot/issues/6)）**。v9.7.0 Ledger 提名的首个 DROP/MERGE 候选落地——把 FAILURE 14 的 7 层防御合并为 3 角色：**CONTRACT**（researcher §4 扫描 + designer §2c 声明）、**EVIDENCE**（implementer §1e grep 证据表）、**GATE**（Phase 4A 确定性门 + 新增 file:line grep spot-check + 转换桥接检查(v9.7.1a)，与 Phase 4B reviewer 独立重建）。删除冗余的 micro-loop LLM 字段 diff（旧 L6）；4A.5 触发收窄为 `T_contract_*`；frontend-designer §2g 降为作者指引。canonical layer_roi **21 → 19（净 −2，首个负 delta）**；Global Rule 21 + FAILURE 14 改写；validate.sh Check 7 正则更新。两道独立门（确定性 4A + 独立 4B）仍守 FAILURE 14，删除无损。 |
 | v9.7.0 | 2026-07-16 | **Complexity Ratchet — 治理 harness 单调膨胀（[#6](https://github.com/vipdocker/qoder-autopilot/issues/6)）**。对齐 loop-engineering 经济学：harness 只能在**同一版本也提名"砍什么"**时才允许生长，否则判 FAILURE 21 复发。刻意以**扩展既有防线而非新增计数**落地——FAILURE 21 FIX 增补 COMPLEXITY RATCHET 条款；Global Rule 22 由"两件套"扩为"三件套"（Layer ROI + 逐层可证伪 harness 假设 + Complexity Ratchet Ledger）；Phase 7 新增 Complexity Ratchet Ledger（净层数 delta + 强制 DROP/MERGE 提名 + 自应用示范）与逐层可证伪假设表；`reference.md` 新增 §Complexity Ratchet（EXTEND>MERGE>ADD 优先级 + 冗余启发式）；state 模板 `harness_assumption` 升级为 `{global, per_layer}` 并新增 `complexity_ratchet` 字段。**净 failure/rule 计数 delta = 0**（walk-the-talk）。首个 DROP/MERGE 候选已提名：FAILURE 14 字段映射 L1–L7 共 7 层 → v9.7.1 合并至 ≤3（待 ablation 验证）。 |
 | v9.6.1 | 2026-07-06 | **契约漂移审计修复 + validate.sh 自校验（[#4](https://github.com/vipdocker/qoder-autopilot/issues/4)）**。审计发现 v9.6/v9.6.1 升级时 phase 文件（orchestrator 侧）与 agent 文件改动不同步——FAILURE 11/14 发生在 harness 自身。修复：（1）Phase 3B↔Reviewer 契约统一（mode=`ac_negotiation`、死引用 §1.5→Section N、JSON 统一为 ac_negotiation_verdict+findings、assignment 补 research_brief_path/acceptance_criteria）；（2）Phase 2 与 Designer §2c 矛盾消除（逐字段表指令→轻量声明）；（3）MALFORMED 判定 mode 化 + Section M/N 补 status/gate；（4）layer_roi 三套 schema 统一为 canonical ID（后扩展至 21+intent_injection）；（5）Phase 4A 同步 4-state 状态机路由 + 模型档位映射表（cheap/standard→Default、premium→Premium）；（6）designer/frontend-designer/planner 补强制 JSON 块，全部 7 agent 补 injection_used，Phase 1–5 全派发点补 Injected Skills 传播行；（7）全文件版本统一 9.6.1、implementer 章节序修正、Phase 6 技能数 12→13。<br><br>**新增 `validate.sh`（103 项检查）**：版本一致性 / mode 契约 / 章节锚点 / JSON 字段契约 / JSON 块+injection_used 覆盖 / layer_roi ID 双向比对 / agent 引用可解析 / 退役词汇封禁 / Rule 24 传播；接入 install.sh pre-flight，校验失败拒绝安装。首次运行即抓到人工评审遗漏的 planner JSON 块缺失，并在后续 rebase 中拦截到需求追溯特性新增的 7 个 layer ID 未同步 SKILL.md 状态模板的漂移。 |

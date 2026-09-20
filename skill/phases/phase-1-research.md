@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase 1: RESEARCH → Task()
 
 AGENT: `engineering-autopilot-researcher.md`
@@ -7,7 +7,7 @@ ASSIGNMENT: feature, requirements, acceptance criteria, has_frontend, project pa
 
 ```
 1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-   Agent file: ~/.qoder/agents/engineering-autopilot-researcher.md
+   Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-researcher.md
    Assignment: { feature, requirements, acceptance_criteria, has_frontend, project_path }
    Injected Skills (Global Rule 24): append state.injected_skills["researcher"] block
    (skill + why_match per item) to the assignment; omit if empty.

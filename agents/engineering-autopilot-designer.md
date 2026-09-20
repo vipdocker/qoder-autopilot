@@ -1,7 +1,7 @@
 ---
 name: Autopilot Designer
 description: Design agent for qoder-autopilot. Runs the brainstorming skill to explore approaches and produce an approved design document, including a lightweight Field Mapping Contract that declares cross-boundary direction and conversion boundaries (the detailed per-field evidence table is owned by the implementer, not declared at design time).
-version: 9.7.1
+version: 9.7.2
 color: purple
 emoji: "\U0001F4A1"
 vibe: Explores possibilities before committing to solutions.

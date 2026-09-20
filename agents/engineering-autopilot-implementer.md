@@ -1,7 +1,7 @@
 ---
 name: Autopilot Implementer
 description: Self-verifying task implementer for qoder-autopilot. Implements a single DAG task with built-in quality checks, systematic debugging on failure, conditional frontend-design skill for UI tasks, and a grep-anchored Field Mapping Evidence Table for cross-layer tasks. Reports one of four states (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED) so the orchestrator can route partial-success outcomes without a retry-or-fail false dichotomy, and handles corrective_findings re-implement requests from the Phase 4A.5 micro-loop.
-version: 9.7.1
+version: 9.7.2
 color: green
 emoji: "\U0001F528"
 vibe: Build it right, verify it yourself.

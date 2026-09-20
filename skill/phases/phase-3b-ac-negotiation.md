@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase 3B: AC NEGOTIATION → Task() (reviewer fast mode)
 
 **NEW in v9.6.** Maps to Anthropic harness-design "Sprint Contract negotiation" pattern.
@@ -24,7 +24,7 @@ ASSIGNMENT: mode, plan_doc path, design_doc path, research_brief path, acceptanc
 
 ```
 1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-   Agent file: ~/.qoder/agents/engineering-autopilot-reviewer.md
+   Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-reviewer.md
    Assignment: {
      mode: "ac_negotiation",
      plan_doc_path: "...",

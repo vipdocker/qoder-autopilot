@@ -1,5 +1,5 @@
 #!/bin/bash
-# Qoder Autopilot v9.7.1 — Install Script
+# Qoder Autopilot v9.7.2 — Install Script
 # Usage: bash install.sh
 
 set -e
@@ -15,7 +15,7 @@ CYAN='\033[0;36m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-echo -e "${CYAN}Qoder Autopilot v9.7.1 — Installing...${NC}"
+echo -e "${CYAN}Qoder Autopilot v9.7.2 — Installing...${NC}"
 echo ""
 
 # ─── Pre-flight checks ───
@@ -64,22 +64,37 @@ if [ -d "$HOME/.qoder/skills/qoder-autopilot" ]; then
   rm -rf "$HOME/.qoder/skills/qoder-autopilot"
 fi
 
-# Remove old validator agent (v6.x → v7.0+ upgrade)
-for dir in "$HOME/.qoder/agents" "$HOME/.qoderwork/agents"; do
-  if [ -f "$dir/engineering-autopilot-validator.md" ]; then
-    echo -e "  ${YELLOW}Removing deprecated validator agent from $dir${NC}"
-    rm -f "$dir/engineering-autopilot-validator.md"
-  fi
-done
-
-# Remove stale symlink if exists
-if [ -L "$HOME/.qoderwork/skills/qoder-autopilot" ]; then
-  echo -e "  ${YELLOW}Removing existing symlink ~/.qoderwork/skills/qoder-autopilot${NC}"
-  rm -f "$HOME/.qoderwork/skills/qoder-autopilot"
-elif [ -d "$HOME/.qoderwork/skills/qoder-autopilot" ]; then
-  echo -e "  ${YELLOW}Removing existing directory ~/.qoderwork/skills/qoder-autopilot (will be replaced by symlink)${NC}"
+# Skills now live ONLY in ~/.agents/skills/ — drop the legacy ~/.qoderwork symlink
+if [ -e "$HOME/.qoderwork/skills/qoder-autopilot" ] || [ -L "$HOME/.qoderwork/skills/qoder-autopilot" ]; then
+  echo -e "  ${YELLOW}Removing old: ~/.qoderwork/skills/qoder-autopilot (legacy symlink)${NC}"
   rm -rf "$HOME/.qoderwork/skills/qoder-autopilot"
 fi
+
+# Agents now live ONLY in ~/.qoder/agents/qoder-autopilot/ — remove root-level copies
+if ls "$HOME/.qoder/agents"/engineering-autopilot-*.md >/dev/null 2>&1; then
+  echo -e "  ${YELLOW}Removing old: ~/.qoder/agents/engineering-autopilot-*.md (root-level, old layout)${NC}"
+  rm -f "$HOME/.qoder/agents"/engineering-autopilot-*.md
+fi
+
+# ~/.qoderwork is the pre-migration config dir and is no longer written — remove any mirror copy
+if ls "$HOME/.qoderwork/agents"/engineering-autopilot-*.md >/dev/null 2>&1; then
+  echo -e "  ${YELLOW}Removing old: ~/.qoderwork/agents/engineering-autopilot-*.md (legacy mirror)${NC}"
+  rm -f "$HOME/.qoderwork/agents"/engineering-autopilot-*.md
+fi
+if [ -d "$HOME/.qoderwork/agents/qoder-autopilot" ]; then
+  echo -e "  ${YELLOW}Removing old: ~/.qoderwork/agents/qoder-autopilot/ (legacy mirror)${NC}"
+  rm -rf "$HOME/.qoderwork/agents/qoder-autopilot"
+fi
+
+# Remove old validator agent (v6.x → v7.0+ upgrade), root and subdir locations
+for f in "$HOME/.qoder/agents/engineering-autopilot-validator.md" \
+         "$HOME/.qoder/agents/qoder-autopilot/engineering-autopilot-validator.md" \
+         "$HOME/.qoderwork/agents/engineering-autopilot-validator.md"; do
+  if [ -f "$f" ]; then
+    echo -e "  ${YELLOW}Removing deprecated validator agent: $f${NC}"
+    rm -f "$f"
+  fi
+done
 
 echo ""
 
@@ -110,38 +125,19 @@ else
 fi
 echo ""
 
-# ─── Create symlink: ~/.qoderwork/skills/qoder-autopilot → ~/.agents/skills/qoder-autopilot ───
-echo -e "${CYAN}[Symlink → ~/.qoderwork/skills/qoder-autopilot]${NC}"
+# ─── Install Agent files to ~/.qoder/agents/qoder-autopilot/ ───
+echo -e "${CYAN}[Agents → ~/.qoder/agents/qoder-autopilot/]${NC}"
 
-mkdir -p "$HOME/.qoderwork/skills"
-ln -s "$HOME/.agents/skills/qoder-autopilot" "$HOME/.qoderwork/skills/qoder-autopilot"
-
-if [ -L "$HOME/.qoderwork/skills/qoder-autopilot" ]; then
-  echo -e "  Symlink: ${GREEN}OK${NC} → ~/.agents/skills/qoder-autopilot"
-else
-  echo -e "  Symlink: ${RED}FAILED${NC}"
-  ERRORS=$((ERRORS + 1))
-fi
-echo ""
-
-# ─── Install Agent files to ~/.qoder/agents/ AND ~/.qoderwork/agents/ ───
-echo -e "${CYAN}[Agents → ~/.qoder/agents/ + ~/.qoderwork/agents/]${NC}"
-
-mkdir -p "$HOME/.qoder/agents"
-mkdir -p "$HOME/.qoderwork/agents"
-cp "$AGENT_SRC"/engineering-autopilot-*.md "$HOME/.qoder/agents/"
-cp "$AGENT_SRC"/engineering-autopilot-*.md "$HOME/.qoderwork/agents/"
+mkdir -p "$HOME/.qoder/agents/qoder-autopilot"
+cp "$AGENT_SRC"/engineering-autopilot-*.md "$HOME/.qoder/agents/qoder-autopilot/"
 
 # Verify agents
-AGENTS_QODER=$(ls "$HOME/.qoder/agents"/engineering-autopilot-*.md 2>/dev/null | wc -l | tr -d ' ')
-AGENTS_QODERWORK=$(ls "$HOME/.qoderwork/agents"/engineering-autopilot-*.md 2>/dev/null | wc -l | tr -d ' ')
+AGENTS_INSTALLED=$(ls "$HOME/.qoder/agents/qoder-autopilot"/engineering-autopilot-*.md 2>/dev/null | wc -l | tr -d ' ')
 
-if [ "$AGENTS_QODER" -eq 7 ] && [ "$AGENTS_QODERWORK" -eq 7 ]; then
-  echo -e "  ~/.qoder/agents/:     ${GREEN}$AGENTS_QODER/7${NC}"
-  echo -e "  ~/.qoderwork/agents/: ${GREEN}$AGENTS_QODERWORK/7${NC}"
+if [ "$AGENTS_INSTALLED" -eq 7 ]; then
+  echo -e "  ~/.qoder/agents/qoder-autopilot/: ${GREEN}$AGENTS_INSTALLED/7${NC}"
 else
-  echo -e "  ~/.qoder/agents/:     ${RED}$AGENTS_QODER/7${NC}"
-  echo -e "  ~/.qoderwork/agents/: ${RED}$AGENTS_QODERWORK/7${NC}"
+  echo -e "  ~/.qoder/agents/qoder-autopilot/: ${RED}$AGENTS_INSTALLED/7${NC}"
   ERRORS=$((ERRORS + 1))
 fi
 echo ""
@@ -150,10 +146,8 @@ echo ""
 if [ "$ERRORS" -eq 0 ]; then
   echo -e "${GREEN}Installation complete.${NC}"
   echo ""
-  echo "  Skill (primary):  ~/.agents/skills/qoder-autopilot/     (12 files)"
-  echo "  Skill (symlink):  ~/.qoderwork/skills/qoder-autopilot → primary"
-  echo "  Agents:           ~/.qoder/agents/                      (7 files)"
-  echo "  Agents (mirror):  ~/.qoderwork/agents/                  (7 files)"
+  echo "  Skill:   ~/.agents/skills/qoder-autopilot/         (12 files)"
+  echo "  Agents:  ~/.qoder/agents/qoder-autopilot/          (7 files)"
   echo ""
   echo "Trigger: qoder-autopilot / 自动开发 / 全自动 / autopilot / 端到端开发"
   echo ""
@@ -190,6 +184,11 @@ if [ "$ERRORS" -eq 0 ]; then
   echo "  - 4A.5 micro-loop trigger narrowed to T_contract_*; frontend-designer §2g demoted to authoring guidance"
   echo "  - canonical layer_roi 21 → 19 (net −2, first NEGATIVE delta — the ratchet demonstrably works)"
   echo "  - Two independent gates remain (deterministic 4A + independent 4B) — FAILURE 14 stays defended"
+  echo ""
+  echo -e "${CYAN}v9.7.2 (install layout unification):${NC}"
+  echo "  - Agents install into ~/.qoder/agents/qoder-autopilot/ (subdirectory), no longer the agents root"
+  echo "  - Skills install ONLY into ~/.agents/skills/qoder-autopilot/ — the ~/.qoderwork mirror/symlink is no longer created and old copies are cleaned up"
+  echo "  - Runtime protocol unchanged — install/distribution layer only"
 else
   echo -e "${RED}Installation finished with errors. Check output above.${NC}"
   exit 1

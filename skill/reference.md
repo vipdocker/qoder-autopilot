@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Reference Guide
 
 Read this file when making quality gate, resource limit, or error classification decisions.

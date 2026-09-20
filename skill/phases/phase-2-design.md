@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase 2: DESIGN → Task() + conditional Task() → HUMAN GATE
 
 ## Phase 2A: BRAINSTORM → Task() — ALWAYS
@@ -9,7 +9,7 @@ ASSIGNMENT: feature, requirements, research_brief path, project path
 
 ```
 1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-   Agent file: ~/.qoder/agents/engineering-autopilot-designer.md
+   Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-designer.md
    Assignment: { feature, requirements, research_brief_path, project_path }
    Injected Skills (Global Rule 24): append state.injected_skills["designer"] block
    (skill + why_match per item) to the assignment; omit if empty.
@@ -47,7 +47,7 @@ ASSIGNMENT: feature, requirements, design_doc path, research_brief path, project
 ```
 IF state.has_frontend == true:
   1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-     Agent file: ~/.qoder/agents/engineering-autopilot-frontend-designer.md
+     Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-frontend-designer.md
      Assignment: { feature, requirements, design_doc_path, research_brief_path, project_path }
      Injected Skills (Global Rule 24): append state.injected_skills["frontend-designer"] block
      (skill + why_match per item) to the assignment; omit if empty.

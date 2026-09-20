@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase 3: PLAN → Task()
 
 AGENT: `engineering-autopilot-planner.md`
@@ -7,7 +7,7 @@ ASSIGNMENT: feature, design_doc path, frontend_spec path (if applicable), has_fr
 
 ```
 1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-   Agent file: ~/.qoder/agents/engineering-autopilot-planner.md
+   Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-planner.md
    Assignment: { feature, design_doc_path, frontend_spec_path (if has_frontend, else omit),
                  has_frontend, project_path, research_brief_path }
    Injected Skills (Global Rule 24): append state.injected_skills["planner"] block

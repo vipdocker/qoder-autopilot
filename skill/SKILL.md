@@ -1,10 +1,10 @@
 ---
 name: qoder-autopilot
 description: "多 Agent 自动开发流水线 — 从需求到发布的全流程编排。调度 7 个专业 Agent 完成研究→设计→规划→实现→评审→完成。质量门：Phase 3B AC 协商、Phase 4A.5 task-level micro-loop、Phase 4B 批次评审（spec 门先于 quality 门）、数据存在性与需求可追溯门控；Phase 7 以 Layer ROI + Complexity Ratchet 治理 harness 自身的复杂度膨胀。Triggers: 'qoder-autopilot', 'qoder autopilot', '自动开发', '全自动', '一键开发', 'autopilot', 'end-to-end development', '端到端开发'。"
-version: 9.7.1
+version: 9.7.2
 ---
 
-# Qoder Autopilot v9.7.1 — Lean Orchestrator
+# Qoder Autopilot v9.7.2 — Lean Orchestrator
 
 > **Version history, rationale & per-version changelogs:** see `README.md` (install-time only, not loaded at runtime).
 > This file is the runtime spine — protocols, gates, rules. It tells you **what to do now**, not **why we got here**.
@@ -262,7 +262,7 @@ Every agent dispatch follows these 5 steps. ZERO exceptions.
 STEP 1 — COMPOSE THIN PROMPT (orchestrator context cost: ~200 bytes)
   prompt = """
   ⛔ MANDATORY: Read your instructions file FIRST before doing anything else.
-  Instructions: Read("~/.qoder/agents/engineering-autopilot-{role}.md")
+  Instructions: Read("~/.qoder/agents/qoder-autopilot/engineering-autopilot-{role}.md")
   Follow ALL instructions in that file. Call every Skill() listed in it.
 
   --- ASSIGNMENT ---
@@ -374,7 +374,7 @@ Write BEFORE and AFTER every Task(). Read at start of every phase.
 
 ```json
 {
-  "version": "9.7.1",
+  "version": "9.7.2",
   "current_phase": "EXECUTE",
   "feature": "...",
   "has_frontend": true,
@@ -490,8 +490,7 @@ engineering-autopilot-implementer.md                Premium      Code generation
 engineering-autopilot-reviewer.md                   Premium      Code review, AST + security (/cso)
 engineering-autopilot-finisher.md                   default      Branch prep + /benchmark + final checks
 
-All files in: ~/.qoder/agents/
-Mirrored in: ~/.qoderwork/agents/
+All files in: ~/.qoder/agents/qoder-autopilot/
 ```
 
 ---

@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase 5: FINISH → Task() + VERIFY → Task() → HUMAN GATE
 
 **Three steps: 5A finisher (branch prep + static checks), 5B independent verification
@@ -12,7 +12,7 @@ ASSIGNMENT: branch name, feature, has_frontend, frontend_spec path (if has_front
 
 ```
 1. DISPATCH via UNIVERSAL DISPATCH PROTOCOL:
-   Agent file: ~/.qoder/agents/engineering-autopilot-finisher.md
+   Agent file: ~/.qoder/agents/qoder-autopilot/engineering-autopilot-finisher.md
    Assignment: { branch_name, feature, has_frontend, frontend_spec_path (if has_frontend, else omit), project_path, change_summary }
    Injected Skills (Global Rule 24): append state.injected_skills["finisher"] block
    (skill + why_match per item) to the assignment; omit if empty.

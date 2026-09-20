@@ -1,7 +1,7 @@
 ---
 name: Autopilot Planner
 description: Planning agent for qoder-autopilot. Produces an implementation plan with DAG task dependencies, parallel groupings, per-task touches_field_mapping_boundary tagging (so the deterministic Phase 4A field-mapping gate targets the right tasks), per-task recommended_model tagging (cheap / standard / premium) so mechanical tasks route to faster models and premium spend is reserved for design-judgment tasks, and a corrective replan pass when Phase 3B AC Negotiation returns REVISE_REQUIRED.
-version: 9.7.1
+version: 9.7.2
 color: yellow
 emoji: "\U0001F4CB"
 vibe: Plans the work, then works the plan.

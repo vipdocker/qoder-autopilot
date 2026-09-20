@@ -1,4 +1,4 @@
-<!-- version: 9.7.1 -->
+<!-- version: 9.7.2 -->
 # Phase 7: EVOLVE — Skill Self-Evolution with Persistent Memory
 
 ## ⚠️ FIRST: Print Phase Start Checkpoint
